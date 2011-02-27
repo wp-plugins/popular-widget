@@ -1,0 +1,73 @@
+ul#pop-widget-tabs {
+	list-style:none;
+	clear:both;
+	width: 100%;
+	border:none;
+	margin:0!important;
+	padding:0!important;
+}
+div.pop-inside { clear:both }
+ul#pop-widget-tabs li {
+	padding:0;
+	float: left;
+	display: inline;
+	line-height: 30px;
+	background: #fff;
+	border: 1px solid #eee;
+	font-weight: bold;
+	margin: 0 2px 2px 0;
+	font-size: 11px;
+	list-style:none;
+	cursor: pointer;
+}
+ul#pop-widget-tabs li a {
+	float: left;
+	display: block;
+	padding: 0 6px;
+	line-height: 30px;
+	font-family: Arial, Helvetica, sans-serif;
+	letter-spacing: -.05em;
+}
+ul#pop-widget-tabs li a:hover, 
+ul#pop-widget-tabs li a.active,
+ul#pop-widget-tabs li a:active, 
+ul#pop-widget-tabs li a:focus {
+	text-decoration:none;
+	background:#eee
+}
+div.pop-inside {
+	width: 100%;
+	clear:both;
+	padding: 5px;
+	border: 1px solid #eee;
+	margin: 5px 0px 0px;
+	background-color: white;
+}
+div.pop-inside ul {
+	border:none;
+	padding:3px;
+	display:block;
+	list-style:none;
+	margin:0!important;
+}
+div.pop-inside ul li {
+	list-style:none;
+	border-bottom:dotted 1px #ddd;
+	padding:5px;
+	margin:0;
+}
+div.pop-inside ul li p {
+	margin:0;
+	padding:0;
+}
+div.pop-inside ul li:last-child { border-bottom:none }
+div.pop-inside ul.wp-tag-cloud { padding:5px 8px!important}
+div.pop-inside ul.wp-tag-cloud li {
+	display:inline;
+	border-bottom:none;
+	padding:0
+}
+
+ul.xoxo ul#pop-widget-tabs li a{ padding:0 4px; line-height:25px}
+ul.xoxo ul#pop-widget-tabs.pop-tabs-all li{ font-size:10px; line-height:20px}
+ul.xoxo ul#pop-widget-tabs.pop-tabs-all li a{ padding:0 2px; line-height:20px}
