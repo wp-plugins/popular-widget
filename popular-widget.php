@@ -4,7 +4,7 @@ Plugin Name: Popular Widget
 Plugin URI: http://imstore.xparkmedia.com/popular-widget/
 Description: Display most viewed, most commented and tags in one widget (with tabs)
 Author: Hafid R. Trujillo Huizar
-Version: 0.5.0
+Version: 0.5.1
 Author URI: http://www.xparkmedia.com
 Requires at least: 3.0.0
 Tested up to: 3.1.0
@@ -44,7 +44,7 @@ class PopularWidget extends WP_Widget {
 		if(!defined('POPWIDGET_URL')) 
 			define('POPWIDGET_URL',WP_PLUGIN_URL."/".plugin_basename(dirname(__FILE__))."/");
 		
-		$this->version = "0.5.0";
+		$this->version = "0.5.1";
 		$this->domain  = "pop-wid";
 		$this->load_text_domain();
 		
@@ -108,8 +108,7 @@ class PopularWidget extends WP_Widget {
 		if(!$nocommented){
 		$commented = $wpdb->get_results(
 			"SELECT DISTINCT comment_count,ID,post_title,post_content,post_excerpt,post_date 
-			FROM $wpdb->posts p $join WHERE post_date <= '" . date('Y-m-d', current_time('timestamp'))."'
-			AND post_date >= '" . date('Y-m-d', current_time('timestamp')-($days*86400)) . "' 
+			FROM $wpdb->posts p $join WHERE  post_date >= '" . date('Y-m-d', current_time('timestamp')-($days*86400)) . "' 
 			AND post_status = 'publish' AND comment_count != 0 $where
 			ORDER BY comment_count DESC LIMIT $limit"
 		);}
@@ -121,7 +120,7 @@ class PopularWidget extends WP_Widget {
 			WHERE meta_key = '_popular_views' AND meta_value != ''
 			AND post_date >= '" . date('Y-m-d', current_time('timestamp')-($days*86400)) . "' 
 			AND post_status = 'publish' $where
-			ORDER BY comment_count DESC LIMIT $limit"
+			ORDER BY (meta_value+0) DESC LIMIT $limit"
 		);}
 		
 		$tabs = (!$nocommented && !$noviewed && !$notags) ? ' class="pop-tabs-all"': '';

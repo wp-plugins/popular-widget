@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: box,widget,popular,most commented,most viewed,tags,tabs,dynamic,cloud,post by category,by date,popular posts,range
 Requires at least: 3.0.0
 Tested up to: 3.0.5
-Stable tag: 2.0.7
+Stable tag: 0.5.1
 
 Display most commented or most viewed posts in a tabed widget, filter the post by date range or by category. It also includes a tags tab.
 
@@ -46,6 +46,10 @@ This is a simple popular posts WordPress widget for your blog. Add and day inter
 * http://imstore.xparkmedia.com/blog
 
 == Changelog ==
+= 0.5.1 =
+* Fixed: Most Viewed sort
+* Fixed: Most Commented display
+
 = 0.5.0 =
 * Beta release
 
