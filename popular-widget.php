@@ -4,7 +4,7 @@ Plugin Name: Popular Widget
 Plugin URI: http://imstore.xparkmedia.com/popular-widget/
 Description: Display most viewed, most commented and tags in one widget (with tabs)
 Author: Hafid R. Trujillo Huizar
-Version: 0.5.1
+Version: 0.5.2
 Author URI: http://www.xparkmedia.com
 Requires at least: 3.0.0
 Tested up to: 3.1.0
@@ -44,7 +44,7 @@ class PopularWidget extends WP_Widget {
 		if(!defined('POPWIDGET_URL')) 
 			define('POPWIDGET_URL',WP_PLUGIN_URL."/".plugin_basename(dirname(__FILE__))."/");
 		
-		$this->version = "0.5.1";
+		$this->version = "0.5.2";
 		$this->domain  = "pop-wid";
 		$this->load_text_domain();
 		
@@ -97,6 +97,9 @@ class PopularWidget extends WP_Widget {
 		$days	= ($lastdays) ? $lastdays : 365;
 		$words	= ($excerptlength) ? $excerptlength : 15;
 		
+		$posttypes = (empty($posttypes)) ? $posttypes = array('post'=>'on') : $posttypes;
+		foreach($posttypes as $type => $val) $types[] = "'$type'"; $types = implode(',',$types);
+		
 		if($cats){
 			$join = 
 			"INNER JOIN $wpdb->term_relationships tr ON p.ID = tr.object_id
@@ -107,9 +110,9 @@ class PopularWidget extends WP_Widget {
 		
 		if(!$nocommented){
 		$commented = $wpdb->get_results(
-			"SELECT DISTINCT comment_count,ID,post_title,post_content,post_excerpt,post_date 
+		"SELECT DISTINCT comment_count,ID,post_title,post_content,post_excerpt,post_date 
 			FROM $wpdb->posts p $join WHERE  post_date >= '" . date('Y-m-d', current_time('timestamp')-($days*86400)) . "' 
-			AND post_status = 'publish' AND comment_count != 0 $where
+			AND post_status = 'publish' AND comment_count != 0 AND post_type IN ($types) $where
 			ORDER BY comment_count DESC LIMIT $limit"
 		);}
 		
@@ -119,7 +122,7 @@ class PopularWidget extends WP_Widget {
 			FROM $wpdb->posts p JOIN $wpdb->postmeta pm ON p.ID = pm.post_id $join
 			WHERE meta_key = '_popular_views' AND meta_value != ''
 			AND post_date >= '" . date('Y-m-d', current_time('timestamp')-($days*86400)) . "' 
-			AND post_status = 'publish' $where
+			AND post_status = 'publish' AND post_type IN ($types) $where
 			ORDER BY (meta_value+0) DESC LIMIT $limit"
 		);}
 		
@@ -132,6 +135,7 @@ class PopularWidget extends WP_Widget {
 		if(!$noviewed) $output .= '<li><a href="#viewed" rel="nofollow">'.__('Most Viewed',$this->domain).'</a></li>';
 		if(!$notags) $output .= '<li><a href="#tags" rel="nofollow">'.__('Tags',$this->domain).'</a></li>';
 		$output .= '</ul><div class="pop-inside">';
+
 		
 		//most commented
 		if(!$nocommented){
@@ -191,33 +195,41 @@ class PopularWidget extends WP_Widget {
 	 */
 	function form($instance) {
 		extract($instance);
-		 ?>
+		$post_types = get_post_types(array('public'=>true),'names','and');
+		$posttypes = (empty($posttypes)) ? $posttypes = array('post'=>'on') : $posttypes;
+	 	?>
 		<p>
-		<label for="<?php echo $this->get_field_id('limit')?>"><?php _e('Show how many posts?',$this->domain)?> <input id="<?php echo $this->get_field_id('limit')?>" name="<?php echo $this->get_field_name('limit')?>" size="4" type="text" value="<?php echo $limit?>"/></label>
+			<label for="<?php echo $this->get_field_id('limit')?>"><?php _e('Show how many posts?',$this->domain)?> <input id="<?php echo $this->get_field_id('limit')?>" name="<?php echo $this->get_field_name('limit')?>" size="4" type="text" value="<?php echo $limit?>"/></label>
 		</p>
 		<p>
-		<label for="<?php echo $this->get_field_id('cats')?>"><?php _e('In categories',$this->domain)?> <input id="<?php echo $this->get_field_id('cats')?>" name="<?php echo $this->get_field_name('cats')?>" size="20" type="text" value="<?php echo $cats?>"/></label><br /><small><?php _e('comma-separated category IDs',$this->domain)?> </small>
+			<label for="<?php echo $this->get_field_id('cats')?>"><?php _e('In categories',$this->domain)?> <input id="<?php echo $this->get_field_id('cats')?>" name="<?php echo $this->get_field_name('cats')?>" size="20" type="text" value="<?php echo $cats?>"/></label><br /><small><?php _e('comma-separated category IDs',$this->domain)?> </small>
 		</p>
 		<p>
-		<label for="<?php echo $this->get_field_id('lastdays')?>"><?php _e('In the last',$this->domain)?> <input id="<?php echo $this->get_field_id('lastdays')?>" name="<?php echo $this->get_field_name('lastdays')?>" size="4" type="text" value="<?php echo $lastdays?>"/> <?php _e('Days',$this->domain)?></label>
+			<label for="<?php echo $this->get_field_id('lastdays')?>"><?php _e('In the last',$this->domain)?> <input id="<?php echo $this->get_field_id('lastdays')?>" name="<?php echo $this->get_field_name('lastdays')?>" size="4" type="text" value="<?php echo $lastdays?>"/> <?php _e('Days',$this->domain)?></label>
 		</p>
 		<p>
-		<label for="<?php echo $this->get_field_id('tlength')?>"><?php _e('Title length',$this->domain)?> <input id="<?php echo $this->get_field_id('tlength')?>" name="<?php echo $this->get_field_name('tlength')?>" size="4" type="text" value="<?php echo $tlength?>"/> <?php _e('characters',$this->domain)?></label>
+			<label for="<?php echo $this->get_field_id('tlength')?>"><?php _e('Title length',$this->domain)?> <input id="<?php echo $this->get_field_id('tlength')?>" name="<?php echo $this->get_field_name('tlength')?>" size="4" type="text" value="<?php echo $tlength?>"/> <?php _e('characters',$this->domain)?></label>
 		</p>
 		<p>
-		<label for="<?php echo $this->get_field_id('count')?>"><input id="<?php echo $this->get_field_id('count')?>" name="<?php echo $this->get_field_name('count')?>" type="checkbox" <?php echo($count)?'checked="checked"':''; ?> /> <?php _e('Display count',$this->domain)?></label>
+			<label for="<?php echo $this->get_field_id('count')?>"><input id="<?php echo $this->get_field_id('count')?>" name="<?php echo $this->get_field_name('count')?>" type="checkbox" <?php echo($count)?'checked="checked"':''; ?> /> <?php _e('Display count',$this->domain)?></label>
 		</p>
 		<p>
-		<label for="<?php echo $this->get_field_id('excerpt')?>"><input id="<?php echo $this->get_field_id('excerpt')?>" name="<?php echo $this->get_field_name('excerpt')?>" type="checkbox" <?php echo($excerpt)?'checked="checked"':''; ?> /> <?php _e('Display post excerpt',$this->domain)?></label>
+			<label for="<?php echo $this->get_field_id('excerpt')?>"><input id="<?php echo $this->get_field_id('excerpt')?>" name="<?php echo $this->get_field_name('excerpt')?>" type="checkbox" <?php echo($excerpt)?'checked="checked"':''; ?> /> <?php _e('Display post excerpt',$this->domain)?></label>
 		</p>
 		<p>
-		<label for="<?php echo $this->get_field_id('excerptlength')?>"><?php _e('Excerpt length',$this->domain)?> <input id="<?php echo $this->get_field_id('excerptlength')?>" name="<?php echo $this->get_field_name('excerptlength')?>" size="5" type="text" value="<?php echo $excerptlength?>"/> <?php _e('words',$this->domain)?></label>
+			<label for="<?php echo $this->get_field_id('excerptlength')?>"><?php _e('Excerpt length',$this->domain)?> <input id="<?php echo $this->get_field_id('excerptlength')?>" name="<?php echo $this->get_field_name('excerptlength')?>" size="5" type="text" value="<?php echo $excerptlength?>"/> <?php _e('words',$this->domain)?></label>
+		</p>
+		<p>
+			<label><?php _e('Post Types',$this->domain)?></label><br />
+			<?php foreach ($post_types  as $post_type) { ?>
+			<label for="<?php echo $this->get_field_id($post_type)?>"><input id="<?php echo $this->get_field_id($post_type)?>" name="<?php echo $this->get_field_name('posttypes')."[$post_type]"?>" type="checkbox" <?php echo($posttypes[$post_type])?'checked="checked"':''; ?> /> <?php echo $post_type?></label><br />
+			<?php }?>
 		</p>
 		<p><?php _e('Disable:',$this->domain)?></p>
 		<p>
-		<label for="<?php echo $this->get_field_id('nocommented')?>"><input id="<?php echo $this->get_field_id('nocommented')?>" name="<?php echo $this->get_field_name('nocommented')?>" type="checkbox" <?php echo($nocommented)?'checked="checked"':''; ?> /> <?php _e('Most Commented',$this->domain)?></label><br />
-		<label for="<?php echo $this->get_field_id('noviewed')?>"><input id="<?php echo $this->get_field_id('noviewed')?>" name="<?php echo $this->get_field_name('noviewed')?>" type="checkbox" <?php echo($noviewed)?'checked="checked"':''; ?> /> <?php _e('Most Viewed',$this->domain)?></label><br />
-		<label for="<?php echo $this->get_field_id('notags')?>"><input id="<?php echo $this->get_field_id('notags')?>" name="<?php echo $this->get_field_name('notags')?>" type="checkbox" <?php echo($notags)?'checked="checked"':''; ?> /> <?php _e('Tags',$this->domain)?></label>
+			<label for="<?php echo $this->get_field_id('nocommented')?>"><input id="<?php echo $this->get_field_id('nocommented')?>" name="<?php echo $this->get_field_name('nocommented')?>" type="checkbox" <?php echo($nocommented)?'checked="checked"':''; ?> /> <?php _e('Most Commented',$this->domain)?></label><br />
+			<label for="<?php echo $this->get_field_id('noviewed')?>"><input id="<?php echo $this->get_field_id('noviewed')?>" name="<?php echo $this->get_field_name('noviewed')?>" type="checkbox" <?php echo($noviewed)?'checked="checked"':''; ?> /> <?php _e('Most Viewed',$this->domain)?></label><br />
+			<label for="<?php echo $this->get_field_id('notags')?>"><input id="<?php echo $this->get_field_id('notags')?>" name="<?php echo $this->get_field_name('notags')?>" type="checkbox" <?php echo($notags)?'checked="checked"':''; ?> /> <?php _e('Tags',$this->domain)?></label>
 		</p>
 		<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8SJEQXK5NK4ES"><?php _e('Donate',$this->domain)?></a>
 		 <?php
@@ -231,7 +243,7 @@ class PopularWidget extends WP_Widget {
 	 * @since 0.5.0
 	 */
 	function set_post_view() {
-		if(is_single()){
+		if(is_single() || is_page()){
 			global $post;
 			if(!isset($_COOKIE['popular_views_'.COOKIEHASH]) && setcookie("test", "test", time() + 360)){
 				update_post_meta($post->ID,'_popular_views',get_post_meta($post->ID,'_popular_views',true)+1);
