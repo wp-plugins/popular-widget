@@ -4,10 +4,10 @@ Plugin Name: Popular Widget
 Plugin URI: http://imstore.xparkmedia.com/popular-widget/
 Description: Display most viewed, most commented and tags in one widget (with tabs)
 Author: Hafid R. Trujillo Huizar
-Version: 0.5.2
+Version: 0.5.3
 Author URI: http://www.xparkmedia.com
 Requires at least: 3.0.0
-Tested up to: 3.1.0
+Tested up to: 3.2.0
 
 Copyright 2011 by Hafid Trujillo http://www.xparkmedia.com
 
@@ -41,14 +41,15 @@ class PopularWidget extends WP_Widget {
 	 */
 	function PopularWidget() {
 		
+		ob_start(); //header sent problems
 		if(!defined('POPWIDGET_URL')) 
 			define('POPWIDGET_URL',WP_PLUGIN_URL."/".plugin_basename(dirname(__FILE__))."/");
 		
-		$this->version = "0.5.2";
+		$this->version = "0.5.3";
 		$this->domain  = "pop-wid";
 		$this->load_text_domain();
 		
-		add_action('wp_print_scripts',array(&$this,'set_post_view'));
+		add_action('template_redirect',array(&$this,'set_post_view'));
 		add_action('wp_enqueue_scripts',array(&$this,'load_scripts_styles'));
 		
 		$widget_ops = array('classname' => 'popular-widget','description' => __("Display most popular posts and tags",$this->domain));
