@@ -1,15 +1,25 @@
 jQuery(document).ready(function($){ 
 	
 	$("div.pop-inside ul").hide();
-	$("div.pop-inside ul").eq(0).show();
-	$("#pop-widget-tabs a").eq(0).addClass('active');
 	
-	$("#pop-widget-tabs a").click(function(){
-		$("#pop-widget-tabs a").removeClass('active');								   
+	$(".pop-widget-tabs").each(function(){
+		tabid = $(this).attr('id').replace('pop-widget-tabs-','');
+		$("#pop-widget-tabs-"+tabid+" a").eq(0).addClass('active');	
+		$(".pop-inside-"+tabid+" ul").eq(0).show();
+	})
+	
+	$(".pop-widget-tabs a").click(function(){
+		tab = $(this).attr('href').replace('#','');
+		id  = $(this).parents('.pop-widget-tabs').attr('id').replace('pop-widget-tabs-','');
+		
+		$("#pop-widget-tabs-"+id+" a").removeClass('active');		
 		$(this).addClass('active');
-		inx = $("#pop-widget-tabs a").index($(this));
-		$("div.pop-inside ul").hide();
-		$("div.pop-inside ul").eq(inx).show();
+		
+		inx = $("#pop-widget-tabs-"+id+" a").index($(this));
+		$(".pop-inside-"+id+" ul").hide();
+		$(".pop-inside-"+id+" ul").eq(inx).show();
+
 		return false;
 	});
+	
 });

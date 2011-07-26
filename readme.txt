@@ -1,17 +1,17 @@
 === Popular Widget ===
 Contributors: Hax
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8SJEQXK5NK4ES
-Tags: box,widget,popular,most commented,most viewed,tags,tabs,dynamic,cloud,post by category,by date,popular posts,range
+Tags: box,widget,popular,most commented,most viewed,tags,tabs,dynamic,cloud,post by category,by date,popular posts,range,comments,recent comments,avatar,images
 Requires at least: 3.0.0
 Tested up to: 3.2.0
-Stable tag: 0.5.3
+Stable tag: 1.0.0
 
 Display the most commented or most viewed posts in a tabbed widget, filter the post by date range or by category. It also includes a tags tab. 
 
 == Description ==
 This is a simple popular posts WordPress widget for your blog. Add and day interval to specify when the posts are considered popular, the default is 365 (one year) you can also filter your post by category. Enjoy!! and please support the plugin. :@)
 
-* Languages http://imstore.xparkmedia.com/languages
+* Languages http://xparkmedia.com/popular-widget/languages
 
 = Features =
 * Day range
@@ -21,6 +21,9 @@ This is a simple popular posts WordPress widget for your blog. Add and day inter
 * Excerpt option.
 * Excerpt length.
 * Category filter.
+* Display thumbnails.
+* Display recent comments.
+* Calculate visits or page views.
 
 == Installation ==
 * Download the latest version of the plugin to your computer.
@@ -43,9 +46,18 @@ This is a simple popular posts WordPress widget for your blog. Add and day inter
 * Opera 9.6
 
 == Frequently Asked Questions ==
-* http://imstore.xparkmedia.com/blog
+* http://xparkmedia.com/popular-widget/support
 
 == Changelog ==
+= 1.0.0 =
+* HTML clean up
+* CSS clean up
+* Added: Recent comments option.
+* Added: Thumbnail/Avatar option.
+* Added: Option to calculate pageviews or visits.
+* Fixed: Ability to add multiple widget on one page.
+* Note: update might require to deactivate recent comments.
+
 = 0.5.3 =
 * Fixed: header error with some themes.
 
@@ -60,7 +72,7 @@ This is a simple popular posts WordPress widget for your blog. Add and day inter
 * Beta release
 
 == Upgrade Notice ==
-none
+1.0.0 Update might require to deactivate recent comments.
 
 == Screenshots ==
 
