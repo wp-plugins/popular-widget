@@ -7,7 +7,7 @@ Author: Hafid R. Trujillo Huizar
 Version: 1.0.0
 Author URI: http://www.xparkmedia.com
 Requires at least: 3.0.0
-Tested up to: 3.2.0
+Tested up to: 3.2.1
 
 Copyright 2011 by Hafid Trujillo http://www.xparkmedia.com
 
