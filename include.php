@@ -60,8 +60,7 @@ class PopularWidgetFunctions {
 		
 		global $wpdb; extract($instance);
 		
-		$time = (isset($_GET['time'])) ? $_GET['time'] : $dtime;
-		$timerange = (empty($time)) ? "1=1" : " comment_date >= '".date('Y-m-d H:i:s',strtotime($time,current_time('timestamp')))."'";
+		$time = date('Y-m-d H:i:s',strtotime("-{$lastdays} days",current_time('timestamp')));
 		
 		if($cats){
 			$join = 
@@ -74,7 +73,7 @@ class PopularWidgetFunctions {
 		if($comments == false) {
 			$comments = $wpdb->get_results(
 				"SELECT DISTINCT comment_content,comment_ID,comment_author,user_id,comment_author_email,comment_date
-				FROM $wpdb->comments c $join WHERE $timerange AND comment_approved = 1 AND comment_type = '' 
+				FROM $wpdb->comments c $join WHERE comment_date >= '$time' AND comment_approved = 1 AND comment_type = '' 
 				$where ORDER BY comment_date DESC LIMIT $limit"
 			);
 			wp_cache_set("pop_comments_{$time}",$comments,'pop_cache');
@@ -111,14 +110,13 @@ class PopularWidgetFunctions {
 		
 		global $wpdb; extract($instance);
 		
-		$time = (isset($_GET['time'])) ? $_GET['time'] : $dtime;
-		$timerange = ($time) ? "1=1" : " post_date >= '".date('Y-m-d H:i:s',strtotime($time,current_time('timestamp')))."'";
+		$time = date('Y-m-d H:i:s',strtotime("-{$lastdays} days",current_time('timestamp')));
 		
 		$commented = wp_cache_get("pop_commented_{$time}",'pop_cache');
 		if($commented == false){
 			$commented = $wpdb->get_results(
 				"SELECT DISTINCT comment_count,ID,post_title,post_content,post_excerpt,post_date 
-				FROM $wpdb->posts p $join WHERE $timerange AND post_status = 'publish' AND comment_count != 0 
+				FROM $wpdb->posts p $join WHERE post_date >= '$time' AND post_status = 'publish' AND comment_count != 0 
 				AND post_type IN ($types) $where ORDER BY comment_count DESC LIMIT $limit"
 			);
 			wp_cache_set("pop_commented_{$time}",$commented,'pop_cache');
@@ -159,15 +157,14 @@ class PopularWidgetFunctions {
 	
 		global $wpdb; extract($instance);
 	
-		$time = (isset($_GET['time'])) ? $_GET['time'] : $dtime;
-		$timerange = (empty($time)) ? "" : "AND post_date >= '".date('Y-m-d H:i:s',strtotime($time,current_time('timestamp')))."'";
+		$time = date('Y-m-d H:i:s',strtotime("-{$lastdays} days",current_time('timestamp')));
 		
 		$viewed = wp_cache_get("pop_viewed_{$time}",'pop_cache');
 		if($viewed == false) {
 			$viewed = $wpdb->get_results(
 				"SELECT ID,post_title,post_date,post_content,post_excerpt,meta_value as views
 				FROM $wpdb->posts p JOIN $wpdb->postmeta pm ON p.ID = pm.post_id $join
-				WHERE meta_key = '_popular_views' AND meta_value != '' $timerange 
+				WHERE meta_key = '_popular_views' AND meta_value != '' AND post_date >= '$time'
 				AND post_status = 'publish' AND post_type IN ($types) $where
 				ORDER BY (meta_value+0) DESC LIMIT $limit"
 			);
