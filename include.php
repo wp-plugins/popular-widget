@@ -170,7 +170,7 @@ class PopularWidgetFunctions {
 		$join = '';
 		$output  = '';
 		$where = isset( $where ) ? $where : '';
-		echo $time = date('Y-m-d H:i:s',strtotime("-{$lastdays} days",current_time('timestamp')));
+		$time = date('Y-m-d H:i:s',strtotime("-{$lastdays} days",current_time('timestamp')));
 		
 		$viewed = wp_cache_get( "pop_viewed_{$number}", 'pop_cache' );
 		if( $viewed == false) {
