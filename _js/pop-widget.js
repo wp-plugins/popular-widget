@@ -1,5 +1,7 @@
 jQuery(document).ready(function($){ 
 	
+	$.noConflict();
+	
 	$("div.pop-inside ul").hide();
 	
 	$(".pop-widget-tabs").each(function(){
