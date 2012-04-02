@@ -4,7 +4,7 @@ Plugin Name: Popular Widget
 Plugin URI: http://xparkmedia.com/plugins/popular-widget/
 Description: Display most viewed, most commented and tags in one widget (with tabs)
 Author: Hafid R. Trujillo Huizar
-Version: 1.1.0
+Version: 1.1.5
 Author URI: http://www.xparkmedia.com
 Requires at least: 3.0.0
 Tested up to: 3.3.1
@@ -116,14 +116,14 @@ class PopularWidget extends WP_Widget {
 		&& empty( $notags ) && empty( $nocomments )) 
 		? ' class="pop-widget-tabs pop-tabs-all"': 'class="pop-widget-tabs"';
 		
-		if( isset( $title ) )
-			echo $before_title. $title . $after_title . "\n";
-			
 		// start widget //
 		$output  = $before_widget."\n";
+		if( isset( $title ) ) $output  .= $before_title. $title . $after_title . "\n";
 		$output .= '<div class="pop-layout-v">';
 		$output .= '<ul id="pop-widget-tabs-'.$this->number.'"'.$tabs.'>';
 		
+		if( empty( $norecent )) 
+			$output .= '<li><a href="#comments" rel="nofollow">'.__('Recent',$this->domain).'</a></li>';
 		if( empty( $nocomments )) 
 			$output .= '<li><a href="#comments" rel="nofollow">'.__('<span>Recent</span> Comments',$this->domain).'</a></li>';
 		if( empty( $nocommented )) 
@@ -136,6 +136,14 @@ class PopularWidget extends WP_Widget {
 		$output .= '</ul><div class="pop-inside-'.$this->number.' pop-inside">';
 		
 		$instance['number'] = $this->number;
+		$instance['numberposts'] = $limit;
+	
+		//most comments
+		if( empty( $norecent )){
+			$output .= '<ul id="pop-widget-recent-'.$this->number.'">';
+			$output .= $this->functions->get_recent_posts( $instance );
+			$output .= '</ul>';
+		}
 		
 		//most comments
 		if( empty( $nocomments )){
@@ -160,7 +168,10 @@ class PopularWidget extends WP_Widget {
 		
 		//tags
 		if( empty( $notags )) 
-			$output .= wp_tag_cloud(array('smallest'=>'8','largest'=>'22','format'=>"list",'echo'=>false));
+			$output .= wp_tag_cloud(array(
+				'smallest'=>'8', 'largest'=>'22', 'format'=>"list",
+				'echo'=>false, 'taxonomy' => $taxonomy,
+			));
 		
 		$output .= '<div class="pop-cl"></div></div></div>';
 		echo $output .=  $after_widget."\n";
@@ -179,9 +190,9 @@ class PopularWidget extends WP_Widget {
 	function form( $instance ) {
 		
 		$default = array(
-			'nocomments' => false, 'nocommented' => false, 'noviewed' => false,
+			'nocomments' => false, 'nocommented' => false, 'noviewed' => false, 'norecent' => true,
 			'imgsize' => 'thumbnail', 'counter' => false, 'excerptlength' => '', 'tlength' => '',
-			'calculate' => 'visits', 'title' => '', 'limit'=> 5, 'cats'=>'', 'lastdays' => 30,
+			'calculate' => 'visits', 'title' => '', 'limit'=> 5, 'cats'=>'', 'lastdays' => 30, 'taxonomy' => 'post_tag',
 			'posttypes' => array('post'=>'on'), 'thumb' => false, 'excerpt' => false,'notags'=> false,
 		); $instance = wp_parse_args( $instance, $default );
 		
@@ -211,6 +222,15 @@ class PopularWidget extends WP_Widget {
 			</select>
 			</label>
 		</p>
+		
+		<p><label for="<?php echo $this->get_field_id( 'taxonomy' )?>"><?php _e( 'Tags taxonomy' ,$this->domain)?>
+		<select id="<?php echo $this->get_field_id( 'taxonomy' ); ?>" name="<?php echo $this->get_field_name( 'taxonomy' ); ?>">
+			<?php foreach( get_taxonomies( array('public'=>true), 'names') as $tax => $taxname ):?>
+				<option value="<?php echo $tax?>" <?php selected( $tax, $taxonomy )?>><?php echo $taxname ?></option>
+			<?php endforeach;?>
+		</select></label>
+		</p>
+		
 		<p>
 		<label for="<?php echo $this->get_field_id('counter')?>"><input id="<?php echo $this->get_field_id('counter')?>" name="<?php echo $this->get_field_name('counter')?>" type="checkbox" <?php echo($counter)?'checked="checked"':''; ?> /> <?php _e('Display count',$this->domain)?></label><br />		
 		<label for="<?php echo $this->get_field_id('thumb')?>"><input id="<?php echo $this->get_field_id('thumb')?>" name="<?php echo $this->get_field_name('thumb')?>" type="checkbox" <?php echo($thumb)?'checked="checked"':''; ?> /> <?php _e('Display thumbnail',$this->domain)?></label><br />
@@ -231,7 +251,7 @@ class PopularWidget extends WP_Widget {
 		<label for="<?php echo $this->get_field_id('calculate-visits')?>"><input id="<?php echo $this->get_field_id('calculate-visits')?>" name="<?php echo $this->get_field_name('calculate')?>" value="visits" type="radio" <?php checked($calculate,'visits') ?> /> <abbr title="Every time the user visits the site"><?php _e('Visits',$this->domain)?></abbr></label><br />
 			<small><?php _e('Ads one to the post only once per website visitt.',$this->domain ) ?></small>
 		</p>
-		
+				
 		<p>
 			<label><?php _e('Post Types:',$this->domain)?></label><br />
 			<?php foreach ( $post_types  as $post_type ) { ?>
@@ -240,11 +260,13 @@ class PopularWidget extends WP_Widget {
 		</p>
 		
 		<p><?php _e('Disable:',$this->domain)?><br />
+			<label for="<?php echo $this->get_field_id('norecent')?>"><input id="<?php echo $this->get_field_id('norecent')?>" name="<?php echo $this->get_field_name('norecent')?>" type="checkbox" <?php echo($norecent)?'checked="checked"':''; ?> /> <?php _e('Recent posts',$this->domain)?></label><br />
 			<label for="<?php echo $this->get_field_id( 'nocomments' )?>"><input id="<?php echo $this->get_field_id('nocomments')?>" name="<?php echo $this->get_field_name('nocomments')?>" type="checkbox" <?php echo( $nocomments ) ? 'checked="checked"':''; ?> /> <?php _e('Recent Comments',$this->domain)?></label><br />
 			<label for="<?php echo $this->get_field_id('nocommented')?>"><input id="<?php echo $this->get_field_id('nocommented')?>" name="<?php echo $this->get_field_name('nocommented')?>" type="checkbox" <?php echo($nocommented)?'checked="checked"':''; ?> /> <?php _e('Most Commented',$this->domain)?></label><br />
 			<label for="<?php echo $this->get_field_id('noviewed')?>"><input id="<?php echo $this->get_field_id('noviewed')?>" name="<?php echo $this->get_field_name('noviewed')?>" type="checkbox" <?php echo($noviewed)?'checked="checked"':''; ?> /> <?php _e('Most Viewed',$this->domain)?></label><br />
 			<label for="<?php echo $this->get_field_id('notags')?>"><input id="<?php echo $this->get_field_id('notags')?>" name="<?php echo $this->get_field_name('notags')?>" type="checkbox" <?php echo($notags)?'checked="checked"':''; ?> /> <?php _e('Tags',$this->domain)?></label>
 		</p>
+		
 		<a href="http://xparkmedia.com/popular-widget/"><?php _e('New! Popular Widget Pro',$this->domain)?></a>&nbsp; | &nbsp;
 		<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8SJEQXK5NK4ES"><?php _e('Donate',$this->domain)?></a> 
 		 <?php
@@ -273,7 +295,7 @@ class PopularWidget extends WP_Widget {
 					if( $post->ID == $post_id ) 
 						$exist = true;
 				}
-				if( !$exist ){
+				if( !empty($exist) ){
 					$views[] = $post->ID;
 					update_post_meta($post->ID,'_popular_views',get_post_meta($post->ID,'_popular_views',true)+1);
 					setcookie('popular_views_'.COOKIEHASH,implode("|",$views),0,COOKIEPATH);
@@ -293,11 +315,9 @@ class PopularWidget extends WP_Widget {
 	 * @since 0.5.0
 	 */
 	function limit_words($string, $word_limit){
-   		$words = explode(" ",$string);
+   		$words = explode( " ", strip_shortcodes($string) );
    		return implode(" ",array_splice($words,0,$word_limit));
 	}
-
-
 }
 include(dirname(__FILE__)."/include.php");
 add_action('widgets_init',create_function('','return register_widget("PopularWidget");'));

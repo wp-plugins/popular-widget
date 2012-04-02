@@ -137,7 +137,9 @@ div.pop-inside ul.wp-tag-cloud {
 div.pop-inside ul.wp-tag-cloud li {
 	padding:0;
 	width:auto;
-	display:inline;
+	display:inline-block;
+	word-break: break-all;
+	word-wrap: break-word;
 	border-bottom:none;
 }
 div.pop-inside ul.wp-tag-cloud a:hover,

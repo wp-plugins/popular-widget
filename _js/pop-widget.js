@@ -8,7 +8,7 @@ jQuery(document).ready(function($){
 		tabid = $(this).attr('id').replace('pop-widget-tabs-','');
 		$("#pop-widget-tabs-"+tabid+" a").eq(0).addClass('active');	
 		$(".pop-inside-"+tabid+" ul").eq(0).show();
-	})
+	});
 	
 	$(".pop-widget-tabs a").click(function(){
 		tab = $(this).attr('href').replace('#','');

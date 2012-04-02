@@ -23,7 +23,7 @@ class PopularWidgetFunctions {
 	 * @since 1.0.0
 	 */
 	function limit_words($string, $word_limit){
-		$words = explode(" ",$string);
+		$words = explode( " ", strip_shortcodes($string) );
 		if((str_word_count($string)) > $word_limit) return implode(" ",array_splice($words,0,$word_limit))."...";
 		else return implode(" ",array_splice($words,0,$word_limit));
 	}
@@ -206,9 +206,52 @@ class PopularWidgetFunctions {
 			}
 			$output .= '</span></a><div class="pop-cl"></div></li>'; $count++;
 		}
-		return $output .= ($viewed[0]) ? '' : '<li></li>' ;
+		return $output .= isset($viewed[0]) ? '' : '<li></li>' ;
 	}
 	
+	
+	
+	function get_recent_posts( $instance ){
+		
+		extract( $instance );
+		$posts = wp_cache_get( "pop_recent_{$number}", 'pop_cache' );
+		
+		if( $posts == false) {
+			foreach( $posttypes as $post => $v ){
+				if( $v == 'on' ) $post_types[] = $post;
+			}
+			
+			$posts = get_posts( array(
+				'post_type' => $post_types,
+				'numberposts' => $numberposts,
+			));
+			wp_cache_set( "pop_recent_{$number}", $posts, 'pop_cache' );
+		}
+		
+		//print_r( $instance );
+		$output  = '';
+		foreach(  $posts as $key => $post ){
+			$title = ( $tlength && (strlen($post->post_title) > $tlength)) 
+			? substr($post->post_title, 0, $tlength) . " ..." : $post->post_title;
+			$output .= '<li><a href="'. get_permalink( $post->ID ). '">';
+			
+			if( !empty($thumb ))
+				$image = (has_post_thumbnail($post->ID)) ? 
+				get_the_post_thumbnail($post->ID,$imgsize) : 
+				self::get_post_image($post->ID,$imgsize);
+			
+			$output .= isset($image) ? $image . '<span class="pop-overlay">':'<span class="pop-text">';
+			$output .= '<span class="pop-title">'.$title.'</span> ';
+			
+			if( !empty( $excerpt )){
+				if($post->post_excerpt && $excerptlength) $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$words).'</p>';
+				else $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$words).'</p>';
+			}
+			$output .= '</span></a><div class="pop-cl"></div></li>';
+		}
+		
+		return $output ;
+	}
 }
 
 ?>
