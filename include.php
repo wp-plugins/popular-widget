@@ -20,12 +20,13 @@ class PopularWidgetFunctions {
 	 * @param string $string
 	 * @param unit $word_limit
 	 * @return string
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 */
 	function limit_words($string, $word_limit){
 		$words = explode( " ", strip_shortcodes($string) );
-		if((str_word_count($string)) > $word_limit) return implode(" ",array_splice($words,0,$word_limit))."...";
-		else return implode(" ",array_splice($words,0,$word_limit));
+		if( (str_word_count($string)) > $word_limit ) 
+			return implode(" ",array_splice( $words, 0, $word_limit ))."...";
+		else return implode(" ",array_splice( $words, 0, $word_limit ));
 	}
 	
 	/**
@@ -60,11 +61,12 @@ class PopularWidgetFunctions {
 		
 		global $wpdb; 
 		extract( $instance );
+		$excerptlength = (int)$excerptlength;
 		
 		$join = '';
 		$output  = '';
 		$where = isset( $where ) ? $where : '';
-		$time = date('Y-m-d H:i:s',strtotime("-{$lastdays} days",current_time('timestamp')));
+		$time = date( 'Y-m-d H:i:s', strtotime("-{$lastdays} days",current_time('timestamp')));
 		
 		if( !empty($cats) ){
 			$join = 
@@ -97,12 +99,12 @@ class PopularWidgetFunctions {
 			$output .= isset($image) ? $image.'<span class="pop-overlay">':'<span class="pop-text">';
 			$output .= '<span class="pop-title">'.$title.'</span> ';
 			if( !empty( $excerpt )){
-				if($comment->comment_content && $excerptlength) $output .= '<p>'.self::limit_words(strip_tags($comment->comment_content),$words).'</p>';
-				else $output .= '<p>'.self::limit_words(strip_tags($comment->comment_content),$words).'</p>';
+				if($comment->comment_content && $excerptlength) $output .= '<p>'.self::limit_words(strip_tags($comment->comment_content),$excerptlength).'</p>';
+				else $output .= '<p>'.self::limit_words(strip_tags($comment->comment_content),$excerptlength).'</p>';
 			}
 			$output .= '</span></a><div class="pop-cl"></div></li>';  $count++;
 		}
-		return $output .= ($comments[0]) ? '' : '<li></li>' ;
+		return $output .= (isset($comments[0])) ? '' : '<li></li>' ;
 	}
 	
 	/**
@@ -115,6 +117,7 @@ class PopularWidgetFunctions {
 		
 		global $wpdb; 
 		extract($instance);
+		$excerptlength = (int)$excerptlength;
 		
 		$join = '';
 		$output  = '';
@@ -138,7 +141,7 @@ class PopularWidgetFunctions {
 			$output .= '<li><a href="'.get_permalink($post->ID).'">';
 			
 			if( !empty($thumb ))
-				$image = (has_post_thumbnail($post->ID)) ? 
+				$image = (function_exists('has_post_thumbnail') && has_post_thumbnail($post->ID)) ?
 				get_the_post_thumbnail($post->ID,$imgsize) : 
 				self::get_post_image($post->ID,$imgsize);
 				
@@ -148,12 +151,12 @@ class PopularWidgetFunctions {
 			if( !empty( $counter ))
 				$output .= '<span class="pop-count">('.preg_replace("/(?<=\d)(?=(\d{3})+(?!\d))/"," ",$post->comment_count).')</span>';
 			if( !empty( $excerpt )){
-				if($post->post_excerpt && $excerptlength) $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$words).'</p>';
-				else $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$words).'</p>';
+				if($post->post_excerpt && $excerptlength ) $output .= '<p>'.self::limit_words( strip_tags($post->post_content), $excerptlength ) . '</p>';
+				else $output .= '<p>'. self::limit_words( strip_tags( $post->post_content ), $excerptlength ) . '</p>';
 			}
 			$output .= '</span></a><div class="pop-cl"></div></li>';  $count++;
 		}
-		return $output .= ($commented[0]) ? '' : '<li></li>' ;
+		return $output .= (isset($commented[0])) ? '' : '<li></li>' ;
 	}
 
 	/**
@@ -166,6 +169,7 @@ class PopularWidgetFunctions {
 	
 		global $wpdb; 
 		extract( $instance );
+		$excerptlength = (int)$excerptlength;
 		
 		$join = '';
 		$output  = '';
@@ -191,7 +195,7 @@ class PopularWidgetFunctions {
 			$output .= '<li><a href="'.get_permalink($post->ID).'">';
 					
 			if( !empty($thumb ))
-				$image = (has_post_thumbnail($post->ID)) ? 
+				$image = (function_exists('has_post_thumbnail') && has_post_thumbnail($post->ID)) ?
 				get_the_post_thumbnail($post->ID,$imgsize) : 
 				self::get_post_image($post->ID,$imgsize);
 			
@@ -201,20 +205,25 @@ class PopularWidgetFunctions {
 			if( !empty( $counter ))
 				$output .= '<span class="pop-count">('.preg_replace("/(?<=\d)(?=(\d{3})+(?!\d))/"," ",$post->views).')</span>';
 			if( !empty( $excerpt )){
-				if($post->post_excerpt && $excerptlength) $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$words).'</p>';
-				else $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$words).'</p>';
+				if($post->post_excerpt && $excerptlength) $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$excerptlength).'</p>';
+				else $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$excerptlength).'</p>';
 			}
 			$output .= '</span></a><div class="pop-cl"></div></li>'; $count++;
 		}
 		return $output .= isset($viewed[0]) ? '' : '<li></li>' ;
 	}
 	
-	
-	
+	/**
+	 *get recent results
+	 *
+	 *@return void
+	 *@since 1.0.1
+	*/
 	function get_recent_posts( $instance ){
 		
 		extract( $instance );
 		$posts = wp_cache_get( "pop_recent_{$number}", 'pop_cache' );
+		$excerptlength = (int)$excerptlength;
 		
 		if( $posts == false) {
 			foreach( $posttypes as $post => $v ){
@@ -244,12 +253,11 @@ class PopularWidgetFunctions {
 			$output .= '<span class="pop-title">'.$title.'</span> ';
 			
 			if( !empty( $excerpt )){
-				if($post->post_excerpt && $excerptlength) $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$words).'</p>';
-				else $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$words).'</p>';
+				if($post->post_excerpt && $excerptlength) $output .= '<p>' . self::limit_words(strip_tags($post->post_content), $excerptlength ).'</p>';
+				else $output .= '<p>' . self::limit_words( strip_tags( $post->post_content ), $excerptlength ).'</p>';
 			}
 			$output .= '</span></a><div class="pop-cl"></div></li>';
 		}
-		
 		return $output ;
 	}
 }
