@@ -4,7 +4,7 @@ Plugin Name: Popular Widget
 Plugin URI: http://xparkmedia.com/plugins/popular-widget/
 Description: Display most viewed, most commented and tags in one widget (with tabs)
 Author: Hafid R. Trujillo Huizar
-Version: 1.5.0
+Version: 1.5.1
 Author URI: http://www.xparkmedia.com
 Requires at least: 3.0.0
 Tested up to: 3.4.0
@@ -145,11 +145,11 @@ class PopularWidget extends WP_Widget {
 	 */
 	function set_post_view( ) {
 		global $post;
-		
-		if( empty($widgets[$this->number]) ) return;
-		
+				
 		$widgets = get_option($this->option_name);
 		$instance = $widgets[$this->number];
+		
+		if( empty($widgets[$this->number]) ) return;
 		
 		if((is_single() || is_page() || is_singular()) && $instance['calculate'] == 'visits'){
 			if(!isset($_COOKIE['popular_views_'.COOKIEHASH]) && setcookie("pop-test", "1", time() + 360)){
