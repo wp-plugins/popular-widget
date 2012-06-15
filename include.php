@@ -43,10 +43,10 @@ class PopularWidgetFunctions extends WP_Widget {
 	 * @return string|void
 	 * @since 1.0.0
 	 */
-	function get_post_image($post_id, $size){
+	function get_post_image( $post_id, $size ){
 		
 		if ( function_exists( 'has_post_thumbnail' ) && has_post_thumbnail( $post_id ) )
-			return get_the_post_thumbnail( $post->ID, $imgsize ) ; 
+			return get_the_post_thumbnail( $post_id, $size ) ; 
 					
 		$images = get_children (array( 
 			'order'   => 'ASC',
@@ -58,7 +58,7 @@ class PopularWidgetFunctions extends WP_Widget {
 		));
 		
 		if( empty( $images ) ) return false;
-		foreach( $images as $image)
+		foreach( $images as $image )
 			return wp_get_attachment_image( $image->ID, $size );
 	}
 	

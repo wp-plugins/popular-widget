@@ -4,7 +4,7 @@ Plugin Name: Popular Widget
 Plugin URI: http://xparkmedia.com/plugins/popular-widget/
 Description: Display most viewed, most commented and tags in one widget (with tabs)
 Author: Hafid R. Trujillo Huizar
-Version: 1.5.2
+Version: 1.5.3
 Author URI: http://www.xparkmedia.com
 Requires at least: 3.0.0
 Tested up to: 3.4.0
@@ -43,7 +43,7 @@ class PopularWidget extends PopularWidgetFunctions {
 	function PopularWidget( ){
 		
 		$this->tabs = array();
-		$this->version = "1.5.2";
+		$this->version = "1.5.3";
 		$this->domain  = "pop-wid";
 		
 		parent::PopularWidgetFunctions( ); 
