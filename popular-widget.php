@@ -4,7 +4,7 @@ Plugin Name: Popular Widget
 Plugin URI: http://xparkmedia.com/plugins/popular-widget/
 Description: Display most viewed, most commented and tags in one widget (with tabs)
 Author: Hafid R. Trujillo Huizar
-Version: 1.5.1
+Version: 1.5.3
 Author URI: http://www.xparkmedia.com
 Requires at least: 3.0.0
 Tested up to: 3.4.0
@@ -27,10 +27,12 @@ Foundation,Inc.,51 Franklin St,Fifth Floor,Boston,MA 02110-1301 USA
 */
 
 // Stop direct access of the file
-if(preg_match('#'.basename(__FILE__).'#',$_SERVER['PHP_SELF'])) 
+if( !defined( 'ABSPATH' ) ) 
 	die( );
 
-class PopularWidget extends WP_Widget {
+include( "include.php" );
+
+class PopularWidget extends PopularWidgetFunctions {
 	
 	/**
 	 * Constructor
@@ -38,12 +40,14 @@ class PopularWidget extends WP_Widget {
 	 * @return void
 	 * @since 0.5.0
 	 */
-	function PopularWidget() {
+	function PopularWidget( ){
 		
 		$this->tabs = array();
-		$this->version = "1.5.0";
+		$this->version = "1.5.3";
 		$this->domain  = "pop-wid";
 		
+		parent::PopularWidgetFunctions( ); 
+
 		define( 'POPWIDGET_FOLDER', plugin_basename( dirname( __FILE__ ) ) );
 		define( 'POPWIDGET_URL', WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . "/" );
 		define( 'POPWIDGET_ABSPATH', str_replace("\\","/", dirname( __FILE__ ) ) );
@@ -64,14 +68,11 @@ class PopularWidget extends WP_Widget {
 			 'viewed' => __( '<span>Most </span>Viewed', $this->domain ), 
 			 'tags' => __( 'Tags', $this->domain ) 
 		 ) );
-		 			
-		include( POPWIDGET_ABSPATH . "/include.php");
-		$this->functions = new PopularWidgetFunctions();
-		
-		add_action('template_redirect',array(&$this,'set_post_view'));
+		 
+		add_action( 'template_redirect',array( &$this,'set_post_view') );
 		add_action( 'admin_print_styles',array(&$this,'load_admin_styles') );
 		add_action( 'wp_enqueue_scripts',array(&$this,'load_scripts_styles') );
-
+		
 		$widget_ops = array( 'classname' => 'popular-widget', 'description' => __( "Display most popular posts and tags", $this->domain ));
 		$this->WP_Widget( 'popular-widget', __( 'Popular Widget',$this->domain ), $widget_ops );
 	}
@@ -112,9 +113,9 @@ class PopularWidget extends WP_Widget {
 	 * @since 0.5.0 
 	 */
 	function load_scripts_styles(){
-		if(is_admin()) return;
-		wp_enqueue_style('popular-widget',POPWIDGET_URL.'_css/pop-widget.css',NULL,$this->version);
-		wp_enqueue_script('popular-widget',POPWIDGET_URL.'_js/pop-widget.js',array('jquery'),$this->version,true); 	
+		if( is_admin() || !is_active_widget( false, false, $this->id_base, true ) ) return;
+		wp_enqueue_style( 'popular-widget', POPWIDGET_URL.'_css/pop-widget.css', NULL, $this->version );
+		wp_enqueue_script( 'popular-widget', POPWIDGET_URL . '_js/pop-widget.js', array('jquery'), $this->version, true ); 	
 	}
 	
 	/**
@@ -144,32 +145,36 @@ class PopularWidget extends WP_Widget {
 	 * @since 0.5.0
 	 */
 	function set_post_view( ) {
-		global $post;
-				
+		
+		if( !is_single() && !is_page() && !is_singular() ) 
+			return;
+		
 		$widgets = get_option($this->option_name);
+		if( empty( $widgets[$this->number]) ) return;	
+		
+		global $post;
 		$instance = $widgets[$this->number];
 		
-		if( empty($widgets[$this->number]) ) return;
-		
-		if((is_single() || is_page() || is_singular()) && $instance['calculate'] == 'visits'){
-			if(!isset($_COOKIE['popular_views_'.COOKIEHASH]) && setcookie("pop-test", "1", time() + 360)){
-				update_post_meta($post->ID,'_popular_views',get_post_meta($post->ID,'_popular_views',true)+1);
-				setcookie('popular_views_'.COOKIEHASH,"$post->ID|",0,COOKIEPATH);
+		if( $instance['calculate'] == 'visits' ){
+			
+			if( !isset( $_COOKIE['popular_views_'.COOKIEHASH] ) ){
+				setcookie( 'popular_views_' . COOKIEHASH, "$post->ID|", 0, COOKIEPATH );
+				update_post_meta( $post->ID, '_popular_views', get_post_meta( $post->ID, '_popular_views', true)+1 );
 			}else{
-				$views = explode("|",$_COOKIE['popular_views_'.COOKIEHASH]);
+				$views = explode( "|", $_COOKIE['popular_views_' . COOKIEHASH] );
 				foreach( $views as $post_id ){ 
-					if( $post->ID == $post_id ) 
-						$exist = true;
-				}
-				if( !empty( $exist ) ){
-					$views[] = $post->ID;
-					update_post_meta( $post->ID, '_popular_views', get_post_meta( $post->ID, '_popular_views',true )+1 );
-					setcookie('popular_views_'.COOKIEHASH,implode("|",$views),0,COOKIEPATH);
+					if( $post->ID == $post_id ) {
+						$exist = true; break;
+					}
 				}
 			}
-		}elseif( is_single() || is_page() || is_singular( ) ){
-			update_post_meta( $post->ID,'_popular_views',get_post_meta($post->ID,'_popular_views',true)+1 );
-		}
+			
+			if( empty( $exist ) ){
+				$views[] = $post->ID;
+				setcookie( 'popular_views_' . COOKIEHASH, implode( "|", $views ),0 , COOKIEPATH );
+			}
+			
+		} else update_post_meta( $post->ID, '_popular_views', get_post_meta( $post->ID, '_popular_views', true )+1 );
 	}
 	
 	/**
@@ -269,7 +274,6 @@ class PopularWidget extends WP_Widget {
 		
 		</div>
 		
-		
 		<h4 class="popw-collapse"><?php _e( 'Calculate:', $this->domain )?><span></span></h4>
 		<div class="popw-inner">
 			<p>
@@ -285,7 +289,6 @@ class PopularWidget extends WP_Widget {
 			</p>
 		</div>
 		
-		
 		<h4 class="popw-collapse"><?php _e( 'Post Types:',$this->domain )?><span></span></h4>
 		<div class="popw-inner">
 			<p>
@@ -297,7 +300,6 @@ class PopularWidget extends WP_Widget {
 				<?php } ?>
 			</p>
 		</div>
-		
 		
 		<h4 class="popw-collapse"><?php _e( 'Arrange / Disable:',$this->domain )?><span></span></h4>
 		<div class="popw-inner popw-sortable">
@@ -332,20 +334,24 @@ class PopularWidget extends WP_Widget {
 		global $wpdb;
 		$this->tabs = ( empty( $instance['order'] ) ) 
 		? $this->tabs : array_merge( $instance['order'], $this->tabs );
+		
+		$this->args = $args;
+		$this->instance = wp_parse_args( $instance, $this->defaults );
+		$this->instance['excerptlength'] = (int)$this->instance['excerptlength'];
 
-		$instance = wp_parse_args( $instance, $this->defaults );
-		extract($args); extract($instance); 
+		extract( $this->args ); extract( $this->instance ); 
 		
 		foreach( $posttypes as $type => $val ) 
 			$types_array[] = "'$type'";
 		 
-		$instance['numberposts'] = $limit;
-		$instance['number'] = $this->number;
-		$instance['types'] = implode( ',', $types_array );
+		$this->instance['numberposts'] = $limit;
+		$this->instance['number'] = $this->number;
+		$this->instance['types'] = implode( ',', $types_array );
+		$this->time = date( 'Y-m-d H:i:s', strtotime( "-{$lastdays} days", current_time('timestamp') ) );
 		
 		$disabled_tabs = 0;
 		foreach( array( 'nocomments', 'nocommented', 'noviewed', 'norecent', 'notags') as $disabled )
-			if( empty($instance[$disabled]) ) $disabled_tabs ++;
+			if( empty( $this->instance[$disabled] ) ) $disabled_tabs ++;
 		
 		//start widget
 		$output  = $before_widget ."\n";
@@ -360,8 +366,7 @@ class PopularWidget extends WP_Widget {
 		}
 		$output .= '</ul>';
 		
-		
-		$output .= '<div class="pop-inside-'.$this->number.' pop-inside">';
+		$output .= '<div class="pop-inside-'. $this->number.' pop-inside">';
 		
 		foreach( $this->tabs as $tab => $label ) { 
 			if( ${"no{$tab}"} != 'on' ){
@@ -369,26 +374,30 @@ class PopularWidget extends WP_Widget {
 				
 				switch( $tab ){
 					case 'recent':
-						$output .= $this->functions->get_recent_posts( $instance );
+						$output .= $this->get_recent_posts( );
 						break;
 					case 'comments':
-						$output .= $this->functions->get_comments( $instance );
+						$output .= $this->get_comments( );
 						break;
 					case 'commented':
-						$output .= $this->functions->get_most_commented( $instance );
+						$output .= $this->get_most_commented( );
 						break;
 					case 'viewed':
-						$output .= $this->functions->get_most_viewed( $instance );
+						$output .= $this->get_most_viewed(  );
 						break;
 					case 'tags':
 						$output .= wp_tag_cloud( 
-							apply_filters( 'pop_tag_cloud', array( 'smallest'=>'8', 'largest'=>'22', 'format'=>"list", 'echo'=>false, 'taxonomy' => $taxonomy ), $instance )
+							apply_filters( 'pop_tag_cloud', array( 
+								'smallest'=>'8', 'largest'=>'22', 'format'=>"list", 'echo'=>false, 'taxonomy' => $taxonomy 
+							), $this->instance )
 						);
 						break;
 					default:
 						$output .= apply_filters( 'pop_tab_content', '', $tab, $label );
 				}
+				
 				do_action( 'pop_after_tab_content', $tab, $label  );
+				
 				if(  $tab != 'tags' )  $output .= '</ul>';
 			}
 		}
