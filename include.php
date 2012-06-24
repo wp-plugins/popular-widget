@@ -84,6 +84,12 @@ class PopularWidgetFunctions extends WP_Widget {
 				INNER JOIN $wpdb->terms t ON tt.term_id = t.term_id ";
 				$where = " AND t.term_id IN (". trim( $cats, ',' ) .")"; 
 			}
+			
+			if( !empty( $userids ) )
+				$where .= " AND user_id IN (". trim( $userids, ',' ) .")"; 
+				
+			$join = apply_filters( 'pop_comments_join', $join, $this->instance );
+			$where = apply_filters( 'pop_comments_where', $where, $this->instance );
 		
 			$comments = $wpdb->get_results(
 				"SELECT DISTINCT comment_content,comment_ID,comment_author,user_id,comment_author_email,comment_date
@@ -141,6 +147,12 @@ class PopularWidgetFunctions extends WP_Widget {
 				$where = " AND t.term_id IN (" . trim( $cats, ',' ) . ")"; 
 			}
 			
+			if( !empty( $userids ) )
+				$where .= " AND post_author IN (". trim( $userids, ',' ) .")"; 
+			
+			$join = apply_filters( 'pop_commented_join', $join, $this->instance );
+			$where = apply_filters( 'pop_commented_where', $where, $this->instance );
+			
 			$commented = $wpdb->get_results(
 				"SELECT DISTINCT comment_count,ID,post_title,post_content,post_excerpt,post_date 
 				FROM $wpdb->posts p $join WHERE post_date >= '{$this->time}' AND post_status = 'publish' AND comment_count != 0 
@@ -196,6 +208,12 @@ class PopularWidgetFunctions extends WP_Widget {
 				$where = " AND t.term_id IN (" . trim( $cats, ',' ) . ")"; 
 			}
 			
+			if( !empty( $userids ) )
+				$where .= " AND post_author IN (". trim( $userids, ',' ) .")"; 
+				
+			$join = apply_filters( 'pop_viewed_join', $join, $this->instance );
+			$where = apply_filters( 'pop_viewed_where', $where, $this->instance );
+			
 			$viewed = $wpdb->get_results(
 				"SELECT ID,post_title,post_date,post_content,post_excerpt,meta_value as views
 				FROM $wpdb->posts p JOIN $wpdb->postmeta pm ON p.ID = pm.post_id $join
@@ -250,8 +268,9 @@ class PopularWidgetFunctions extends WP_Widget {
 			$posts = query_posts( array(
 				'suppress_fun' => true,
 				'post_type' => $post_types,
-				'numberposts' => $numberposts,
-				'cat' => trim( $cats, ',' )
+				'posts_per_page' => $limit,
+				'cat' => trim( $cats, ',' ),
+				'author' => trim( $userids, ',' )
 			));
 			
 			wp_cache_set( "pop_recent_{$number}", $posts, 'pop_cache' );

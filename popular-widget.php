@@ -4,7 +4,7 @@ Plugin Name: Popular Widget
 Plugin URI: http://xparkmedia.com/plugins/popular-widget/
 Description: Display most viewed, most commented and tags in one widget (with tabs)
 Author: Hafid R. Trujillo Huizar
-Version: 1.5.3
+Version: 1.5.4
 Author URI: http://www.xparkmedia.com
 Requires at least: 3.0.0
 Tested up to: 3.4.0
@@ -43,7 +43,7 @@ class PopularWidget extends PopularWidgetFunctions {
 	function PopularWidget( ){
 		
 		$this->tabs = array();
-		$this->version = "1.5.3";
+		$this->version = "1.5.4";
 		$this->domain  = "pop-wid";
 		
 		parent::PopularWidgetFunctions( ); 
@@ -56,7 +56,7 @@ class PopularWidget extends PopularWidgetFunctions {
 		
 		$this->defaults = apply_filters( 'pop_defaults_settings', array(
 			'nocomments' => false, 'nocommented' => false, 'noviewed' => false, 'norecent' => false,
-			'imgsize' => 'thumbnail', 'counter' => false, 'excerptlength' => 15, 'tlength' => 20,
+			'imgsize' => 'thumbnail', 'counter' => false, 'excerptlength' => 15, 'tlength' => 20, 'userids' => false,
 			'calculate' => 'visits', 'title' => '', 'limit'=> 5, 'cats'=>'', 'lastdays' => 90, 'taxonomy' => 'post_tag',
 			'posttypes' => array( 'post' => 'on' ), 'thumb' => false, 'excerpt' => false, 'notags'=> false,
 		) );
@@ -187,9 +187,9 @@ class PopularWidget extends PopularWidgetFunctions {
 	function form( $instance ) {
 	
 		$this->tabs = ( empty( $instance['order'] ) ) 
-		? $this->tabs : array_merge( $instance['order'], $this->tabs );
-		
-		$instance = wp_parse_args( $instance, $this->defaults);
+		? $this->tabs : $instance['order'];
+				
+		$instance = wp_parse_args( $instance, $this->defaults );
 		extract( $instance );
 		
 		$post_types = get_post_types(array('public'=>true),'names','and');
@@ -209,9 +209,15 @@ class PopularWidget extends PopularWidgetFunctions {
 		</p>
 		
 		<p>
-			<label for="<?php $this->field_id( 'limit' )?>"><?php _e('Show how many posts?',$this->domain)?> 
+			<label for="<?php $this->field_id( 'limit' )?>"><?php _e( 'Show how many posts?', $this->domain )?> 
 				<input id="<?php $this->field_id( 'limit' )?>" name="<?php $this->field_name('limit')?>" size="5" type="text" value="<?php echo esc_attr( $limit ) ?>"/>
 			</label>
+		</p>
+		
+		<p>
+			<label for="<?php $this->field_id( 'userid' )?>"><?php _e( 'Filter by user id', $this->domain )?> 
+				<input  class="widefat" id="<?php $this->field_id( 'userids' )?>" name="<?php $this->field_name('userids')?>" size="20" type="text" value="<?php echo esc_attr( $userids ) ?>"/>
+			</label><br /><small><?php _e( 'comma-separated user IDs', $this->domain )?> </small>
 		</p>
 		
 		<p>
@@ -305,10 +311,12 @@ class PopularWidget extends PopularWidgetFunctions {
 		<div class="popw-inner popw-sortable">
 			<p>
 				<?php foreach( $this->tabs as $tab => $label ) { ?>
-				<label for="<?php $this->field_id( "no{$tab}" )?>"><?php echo $label ?>
-					<input name="<?php $this->field_name( 'order' ); echo "[$tab]" ?>" type="hidden" value="<?php echo esc_attr( $label ) ?>"/> 
-					<input id="<?php $this->field_id( "no{$tab}" )?>" name="<?php echo $this->field_name( "no{$tab}" )?>" type="checkbox"  <?php checked( ${"no{$tab}"}, 'on' ) ?> /> 
-				</label>
+				<div class="sort-tabs">
+					<label for="<?php $this->field_id( "no{$tab}" )?>"><a href="<?php echo "#$tab" ?>" class="rename" title="<?php _e( 'Rename tab', $this->domain ) ?>"><?php echo $label ?></a>
+						<input id="<?php $this->field_id( "no{$tab}" )?>" name="<?php echo $this->field_name( "no{$tab}" )?>" type="checkbox"  <?php checked( ${"no{$tab}"}, 'on' ) ?> /> 
+					</label>
+					<span class="rename-<?php echo "$tab" ?>"><input name="<?php $this->field_name( 'order' ); echo "[$tab]" ?>" type="text" value="<?php echo esc_attr( $label ) ?>" class="widefat"/></span>
+				</div>
 				<?php } ?>
 			</p>
 		</div>
@@ -333,7 +341,7 @@ class PopularWidget extends PopularWidgetFunctions {
 		
 		global $wpdb;
 		$this->tabs = ( empty( $instance['order'] ) ) 
-		? $this->tabs : array_merge( $instance['order'], $this->tabs );
+		? $this->tabs :  $instance['order'];
 		
 		$this->args = $args;
 		$this->instance = wp_parse_args( $instance, $this->defaults );
@@ -344,7 +352,6 @@ class PopularWidget extends PopularWidgetFunctions {
 		foreach( $posttypes as $type => $val ) 
 			$types_array[] = "'$type'";
 		 
-		$this->instance['numberposts'] = $limit;
 		$this->instance['number'] = $this->number;
 		$this->instance['types'] = implode( ',', $types_array );
 		$this->time = date( 'Y-m-d H:i:s', strtotime( "-{$lastdays} days", current_time('timestamp') ) );
