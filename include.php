@@ -106,19 +106,19 @@ class PopularWidgetFunctions extends WP_Widget {
 			$title = ($tlength && (strlen($comment_author) > $tlength)) 
 			? mb_substr($comment_author,0,$tlength) . " ..." : $comment_author;
 			
-			$output .= '<li><a href="'.get_comment_link($comment->comment_ID).'">';
+			$output .= '<li><a href="'.get_comment_link($comment->comment_ID).'" rel="bookmark">';
 			
 			if( !empty( $thumb ))
 				$image = get_avatar( $comment->comment_author_email, 100); 
 			
-			$output .= isset($image) ? $image.'<span class="pop-overlay">':'<span class="pop-text">';
+			$output .= isset($image) ? $image.'<div class="pop-overlay">':'<div class="pop-text">';
 			$output .= '<span class="pop-title">'.$title.'</span> ';
 			if( !empty( $excerpt )){
 				if($comment->comment_content && $excerptlength) 
 					$output .= '<p>'.self::limit_words(strip_tags($comment->comment_content),$excerptlength).'</p>';
 				else $output .= '<p>'.self::limit_words(strip_tags($comment->comment_content),$excerptlength).'</p>';
 			}
-			$output .= '</span></a><div class="pop-cl"></div></li>';  $count++;
+			$output .= '</div></a><div class="pop-cl"></div></li>';  $count++;
 		}
 		
 		return $output .= ( $count >1) ? '' : '<li></li>' ;
@@ -166,12 +166,12 @@ class PopularWidgetFunctions extends WP_Widget {
 		foreach($commented as $post){
 			$title = ($tlength && (strlen($post->post_title) > $tlength)) 
 			? mb_substr($post->post_title,0,$tlength) . " ..." : $post->post_title;
-			$output .= '<li><a href="'.get_permalink($post->ID).'">';
+			$output .= '<li><a href="'.get_permalink($post->ID).'" rel="bookmark">';
 			
 			if( !empty( $thumb ))  
 				$image = self::get_post_image( $post->ID, $imgsize );
 				
-			$output .= isset($image) ? $image.'<span class="pop-overlay">':'<span class="pop-text">';
+			$output .= isset($image) ? $image.'<div class="pop-overlay">':'<div class="pop-text">';
 			$output .= '<span class="pop-title">'.$title.'</span> ';
 			if( !empty( $counter ))
 				$output .= '<span class="pop-count">('.preg_replace("/(?<=\d)(?=(\d{3})+(?!\d))/"," ",$post->comment_count).')</span>';
@@ -179,7 +179,7 @@ class PopularWidgetFunctions extends WP_Widget {
 				if($post->post_excerpt && $excerptlength ) $output .= '<p>'.self::limit_words( strip_tags($post->post_content), $excerptlength ) . '</p>';
 				else $output .= '<p>'. self::limit_words( strip_tags( $post->post_content ), $excerptlength ) . '</p>';
 			}
-			$output .= '</span></a><div class="pop-cl"></div></li>';  $count++;
+			$output .= '</div></a><div class="pop-cl"></div></li>';  $count++;
 		}
 		
 		return $output .= ( $count >1) ? '' : '<li></li>' ;
@@ -229,21 +229,21 @@ class PopularWidgetFunctions extends WP_Widget {
 		foreach( $viewed as $post ){
 			$title = ($tlength && (strlen($post->post_title) > $tlength)) 
 			? mb_substr($post->post_title,0,$tlength) . " ..." : $post->post_title;
-			$output .= '<li><a href="'.get_permalink($post->ID).'">';
+			$output .= '<li><a href="'.get_permalink($post->ID).'" rel="bookmark">';
 					
 			if( !empty( $thumb ))  
 				$image = self::get_post_image( $post->ID, $imgsize );
 			
-			$output .= isset( $image ) ? $image.'<span class="pop-overlay">':'<span class="pop-text">';
+			$output .= isset( $image ) ? $image.'<div class="pop-overlay">':'<div class="pop-text">';
 			$output .= '<span class="pop-title">'.$title.'</span> ';
 			
 			if( !empty( $counter ))
-				$output .= '<span class="pop-count">('.preg_replace("/(?<=\d)(?=(\d{3})+(?!\d))/"," ",$post->views).')</span>';
+				$output .= '<span class="pop-count">('.preg_replace("/(?<=\d)(?=(\d{3})+(?!\d))/",",",$post->views).')</span>';
 			if( !empty( $excerpt )){
 				if($post->post_excerpt && $excerptlength) $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$excerptlength).'</p>';
 				else $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$excerptlength).'</p>';
 			}
-			$output .= '</span></a><div class="pop-cl"></div></li>'; $count++;
+			$output .= '</div></a><div class="pop-cl"></div></li>'; $count++;
 		}
 		
 		return $output .= ( $count >1) ? '' : '<li></li>' ;
@@ -280,19 +280,19 @@ class PopularWidgetFunctions extends WP_Widget {
 		foreach(  $posts as $key => $post ){
 			$title = ( $tlength && (strlen($post->post_title) > $tlength)) 
 			? mb_substr( $post->post_title, 0, $tlength) . " ..." : $post->post_title;
-			$output .= '<li><a href="'. get_permalink( $post->ID ). '">';
+			$output .= '<li><a href="'. get_permalink( $post->ID ). '" rel="bookmark">';
 			
 			if( !empty( $thumb ))  
 				$image = self::get_post_image( $post->ID, $imgsize );
 			
-			$output .= isset( $image ) ? $image . '<span class="pop-overlay">':'<span class="pop-text">';
+			$output .= isset( $image ) ? $image . '<div class="pop-overlay">':'<div class="pop-text">';
 			$output .= '<span class="pop-title">'.$title.'</span> ';
 			
 			if( !empty( $excerpt )){
 				if($post->post_excerpt && $excerptlength) $output .= '<p>' . self::limit_words(strip_tags($post->post_content), $excerptlength ).'</p>';
 				else $output .= '<p>' . self::limit_words( strip_tags( $post->post_content ), $excerptlength ).'</p>';
 			}
-			$output .= '</span></a><div class="pop-cl"></div></li>';
+			$output .= '</div></a><div class="pop-cl"></div></li>';
 		}
 		
 		return $output ;
