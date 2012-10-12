@@ -96,7 +96,6 @@ class PopularWidgetFunctions extends WP_Widget {
 				FROM $wpdb->comments c $join WHERE comment_date >= '{$this->time}' AND comment_approved = 1 AND comment_type = '' 
 				$where ORDER BY comment_date DESC LIMIT $limit"
 			);
-			
 			wp_cache_set( "pop_comments_{$number}", $comments, 'pop_cache' );
 		}
 		
@@ -115,12 +114,11 @@ class PopularWidgetFunctions extends WP_Widget {
 			$output .= '<span class="pop-title">'.$title.'</span> ';
 			if( !empty( $excerpt )){
 				if($comment->comment_content && $excerptlength) 
-					$output .= '<p>'.self::limit_words(strip_tags($comment->comment_content),$excerptlength).'</p>';
-				else $output .= '<p>'.self::limit_words(strip_tags($comment->comment_content),$excerptlength).'</p>';
+					$output .= '<p>'.self::limit_words(wp_strip_all_tags($comment->comment_content),$excerptlength).'</p>';
+				else $output .= '<p>'.self::limit_words(wp_strip_all_tags($comment->comment_content),$excerptlength).'</p>';
 			}
 			$output .= '</div></a><div class="pop-cl"></div></li>';  $count++;
 		}
-		
 		return $output .= ( $count >1) ? '' : '<li></li>' ;
 	}
 	
@@ -132,7 +130,6 @@ class PopularWidgetFunctions extends WP_Widget {
 	*/
 	function get_most_commented(  ){
 		extract( $this->instance );
-		
 		$commented = wp_cache_get( "pop_commented_{$number}", 'pop_cache' );
 		if( $commented == false ){
 			
@@ -158,7 +155,6 @@ class PopularWidgetFunctions extends WP_Widget {
 				FROM $wpdb->posts p $join WHERE post_date >= '{$this->time}' AND post_status = 'publish' AND comment_count != 0 
 				AND post_type IN ($types) $where ORDER BY comment_count DESC LIMIT $limit"
 			);
-			
 			wp_cache_set( "pop_commented_{$number}", $commented, 'pop_cache');
 		}
 		
@@ -176,12 +172,12 @@ class PopularWidgetFunctions extends WP_Widget {
 			if( !empty( $counter ))
 				$output .= '<span class="pop-count">('.preg_replace("/(?<=\d)(?=(\d{3})+(?!\d))/"," ",$post->comment_count).')</span>';
 			if( !empty( $excerpt )){
-				if($post->post_excerpt && $excerptlength ) $output .= '<p>'.self::limit_words( strip_tags($post->post_content), $excerptlength ) . '</p>';
-				else $output .= '<p>'. self::limit_words( strip_tags( $post->post_content ), $excerptlength ) . '</p>';
+				if($post->post_excerpt && $excerptlength ) 
+					$output .= '<p>'.self::limit_words( wp_strip_all_tags($post->post_content), $excerptlength ) . '</p>';
+				else $output .= '<p>'. self::limit_words( wp_strip_all_tags( $post->post_content ), $excerptlength ) . '</p>';
 			}
 			$output .= '</div></a><div class="pop-cl"></div></li>';  $count++;
 		}
-		
 		return $output .= ( $count >1) ? '' : '<li></li>' ;
 	}
 	
@@ -221,7 +217,6 @@ class PopularWidgetFunctions extends WP_Widget {
 				AND post_status = 'publish' AND post_type IN ($types) $where 
 				ORDER BY (meta_value+0) DESC LIMIT $limit"
 			);
-			
 			wp_cache_set( "pop_viewed_{$number}", $viewed, 'pop_cache' );
 		}
 		
@@ -240,12 +235,12 @@ class PopularWidgetFunctions extends WP_Widget {
 			if( !empty( $counter ))
 				$output .= '<span class="pop-count">('.preg_replace("/(?<=\d)(?=(\d{3})+(?!\d))/",",",$post->views).')</span>';
 			if( !empty( $excerpt )){
-				if($post->post_excerpt && $excerptlength) $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$excerptlength).'</p>';
-				else $output .= '<p>'.self::limit_words(strip_tags($post->post_content),$excerptlength).'</p>';
+				if($post->post_excerpt && $excerptlength) 
+					$output .= '<p>'.self::limit_words(wp_strip_all_tags($post->post_content),$excerptlength).'</p>';
+				else $output .= '<p>'.self::limit_words(wp_strip_all_tags($post->post_content),$excerptlength).'</p>';
 			}
 			$output .= '</div></a><div class="pop-cl"></div></li>'; $count++;
 		}
-		
 		return $output .= ( $count >1) ? '' : '<li></li>' ;
 	}
 	
@@ -264,7 +259,6 @@ class PopularWidgetFunctions extends WP_Widget {
 			foreach( $posttypes as $post => $v ){
 				if( $v == 'on' ) $post_types[] = $post;
 			}
-			
 			$posts = query_posts( array(
 				'suppress_fun' => true,
 				'post_type' => $post_types,
@@ -272,7 +266,6 @@ class PopularWidgetFunctions extends WP_Widget {
 				'cat' => trim( $cats, ',' ),
 				'author' => trim( $userids, ',' )
 			));
-			
 			wp_cache_set( "pop_recent_{$number}", $posts, 'pop_cache' );
 		}
 		
@@ -289,12 +282,12 @@ class PopularWidgetFunctions extends WP_Widget {
 			$output .= '<span class="pop-title">'.$title.'</span> ';
 			
 			if( !empty( $excerpt )){
-				if($post->post_excerpt && $excerptlength) $output .= '<p>' . self::limit_words(strip_tags($post->post_content), $excerptlength ).'</p>';
-				else $output .= '<p>' . self::limit_words( strip_tags( $post->post_content ), $excerptlength ).'</p>';
+				if($post->post_excerpt && $excerptlength) 
+					$output .= '<p>' . self::limit_words(wp_strip_all_tags($post->post_content), $excerptlength ).'</p>';
+				else $output .= '<p>' . self::limit_words( wp_strip_all_tags( $post->post_content ), $excerptlength ).'</p>';
 			}
 			$output .= '</div></a><div class="pop-cl"></div></li>';
 		}
-		
 		return $output ;
 	}
 	
