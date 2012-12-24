@@ -4,7 +4,7 @@ Plugin Name: Popular Widget
 Plugin URI: http://xparkmedia.com/plugins/popular-widget/
 Description: Display most viewed, most commented and tags in one widget (with tabs)
 Author: Hafid R. Trujillo Huizar
-Version: 1.5.6
+Version: 1.5.7
 Author URI: http://www.xparkmedia.com
 Requires at least: 3.0.0
 Tested up to: 3.5.0
@@ -43,7 +43,7 @@ class PopularWidget extends PopularWidgetFunctions {
 	function PopularWidget( ){
 		
 		$this->tabs = array();
-		$this->version = "1.5.5";
+		$this->version = "1.5.7";
 		$this->load_text_domain();
 		
 		parent::PopularWidgetFunctions( ); 
@@ -108,11 +108,11 @@ class PopularWidget extends PopularWidgetFunctions {
 	 */
 	function download_language_file($filedir) {
 
+		add_option('_pop_wid_no_lan_file', current_time('timestamp'));
 		$data = @file_get_contents("http://xparkmedia.com/xm/wp-content/languages/pop-wid-" . $this->locale . ".zip");
-		if (empty($data)) {
-			add_option('_pop_wid_no_lan_file', current_time('timestamp'));
+		
+		if (empty($data))
 			return;
-		}
 
 		if (!file_exists($path = dirname($filedir)))
 			@mkdir($path, 0755, true);
@@ -367,7 +367,7 @@ class PopularWidget extends PopularWidgetFunctions {
 		<?php do_action( 'pop_admin_form' ) ?>
 
 		<!--<a href="http://xparkmedia.com/popular-widget/"><?php _e('New! Popular Widget Pro','pop-wid')?></a>&nbsp; | &nbsp;-->
-		<p><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8SJEQXK5NK4ES"><?php _e( 'Donate', 'pop-wid' )?></a> </p>
+		<p><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YM9GXCFBND89E"><?php _e( 'Donate', 'pop-wid' )?></a> </p>
 		
 		<?php
 	}
@@ -379,13 +379,17 @@ class PopularWidget extends PopularWidgetFunctions {
 	 * @return array
 	 * @since 1.5.6
 	 */
-	function update($instance){
-		foreach( $instance as $key => $val){
-			if(is_array($val)) continue;
-			elseif(in_array($key,array('lastdays','limit','tlength','excerptlength')))			
-				$instance[$key] = intval($val);
-			elseif(in_array($key,array('calculate','imgsize','cats','userids','title')))	
-				$instance[$key] = trim($val,',');	
+	function update( $instance ){
+		
+		foreach( $instance as $key => $val ){
+			if( is_array( $val ) )
+				$instance[$key] = $val;
+				
+			elseif( in_array( $key, array( 'lastdays', 'limit', 'tlength', 'excerptlength' ) ) )			
+				$instance[$key] = intval( $val );
+				
+			elseif( in_array( $key,array( 'calculate', 'imgsize', 'cats', 'userids', 'title' ) ) )	
+				$instance[$key] = trim( $val,',' );	
 		}
 		return $instance;
 	}
@@ -406,7 +410,7 @@ class PopularWidget extends PopularWidgetFunctions {
 		
 		$this->args = $args;
 		$this->instance = wp_parse_args( $instance, $this->defaults );
-		$this->instance['excerptlength'] = (int)$this->instance['excerptlength'];
+		$this->instance['excerptlength'] = (int) $this->instance['excerptlength'];
 
 		extract( $this->args ); extract( $this->instance ); 
 		
