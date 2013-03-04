@@ -4,7 +4,7 @@ Plugin Name: Popular Widget
 Plugin URI: http://xparkmedia.com/plugins/popular-widget/
 Description: Display most viewed, most commented and tags in one widget (with tabs)
 Author: Hafid R. Trujillo Huizar
-Version: 1.5.8
+Version: 1.5.9
 Author URI: http://www.xparkmedia.com
 Requires at least: 3.0.0
 Tested up to: 3.5.1
@@ -43,7 +43,7 @@ class PopularWidget extends PopularWidgetFunctions {
 	function PopularWidget( ){
 		
 		$this->tabs = array();
-		$this->version = "1.5.8";
+		$this->version = "1.5.9";
 		$this->load_text_domain();
 		
 		parent::PopularWidgetFunctions( ); 
@@ -88,11 +88,11 @@ class PopularWidget extends PopularWidgetFunctions {
 			return;
 
 		$filedir = WP_CONTENT_DIR . '/languages/' . 'pop-wid' . '-' . $this->locale . '.mo';
-		if (!file_exists($filedir) && is_admin() && current_user_can('activate_plugins')) {
+		/*if (!file_exists($filedir) && is_admin() && current_user_can('activate_plugins')) {
 			$time = get_option('_pop_wid_no_lan_file');
 			if ($time + (86400 * 2) <= current_time('timestamp'))
 				$this->download_language_file($filedir);
-		}
+		}*/
 
 		if (function_exists('load_plugin_textdomain'))
 			load_plugin_textdomain('pop-wid', false, apply_filters('pop_load_textdomain', '../languages/', 'pop-wid', $this->locale));
