@@ -42,7 +42,7 @@
 	//tabs
 	$output .= '<ul id="pop-widget-tabs-' . $this->number . '" class="pop-widget-tabs pop-widget-tabs-'. $disabled_tabs .'" >';
 	foreach( $this->tabs as $tab => $label ) 
-		if( ${"no{$tab}"} != 'on' ) $output .= '<li><a href="' . esc_attr( "#{$tab}" ) . '" rel="nofollow">' . esc_html( $label ) . '</a></li>';
+		if( ${"no{$tab}"} != 'on' ) $output .= '<li><a href="' . esc_attr( "#{$tab}" ) . '" rel="nofollow">' . $label . '</a></li>';
 	$output .= '</ul>';
 	
 	//tab content
