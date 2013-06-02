@@ -378,7 +378,7 @@
 				
 				// title
 				$output .= apply_filters( "pop_{$this->current_tab}_title", 
-					'<span class="entry-title pop-title">'. $this->limit_words( $post->post_title, $tlength ) . '</span> ', $post 
+					'<span class="pop-title">'. $this->limit_words( $post->post_title, $tlength ) . '</span> ', $post 
 				);
 				
 				// counter
@@ -388,8 +388,8 @@
 				// excerpt
 				if( !empty( $excerpt ) ){ 
 					if( $post->post_excerpt )  
-						$output .= '<span class="entry-summary">' . $this->limit_words( ( $post->post_excerpt ), $excerptlength ) . '</span>';
-					else $output .= '<span class="entry-summary">' . $this->limit_words( ( $post->post_content ), $excerptlength ) . '</span>';
+						$output .= '<span class="pop-summary">' . $this->limit_words( ( $post->post_excerpt ), $excerptlength ) . '</span>';
+					else $output .= '<span class="pop-summary">' . $this->limit_words( ( $post->post_content ), $excerptlength ) . '</span>';
 				 }
 			 
 				$output .= '</a><div class="pop-cl"></div></li>';
@@ -421,12 +421,12 @@
 				
 				// title
 				$output .= apply_filters( "pop_{$this->current_tab}_title", 
-					'<span class="entry-title pop-title">'. $this->limit_words( $comment_author, $tlength ) . '</span> ', $comment 
+					'<span class="pop-title">'. $this->limit_words( $comment_author, $tlength ) . '</span> ', $comment 
 				);
 				
 				// excerpt
 				if( !empty( $excerpt ) )
-				$output .= '<span class="entry-summary">' . $this->limit_words( ( $comment->comment_content ), $excerptlength ) . '</span>';
+				$output .= '<span class="pop-summary">' . $this->limit_words( ( $comment->comment_content ), $excerptlength ) . '</span>';
 			 
 				$output .= '</a><div class="pop-cl"></div></li>';
 			}
