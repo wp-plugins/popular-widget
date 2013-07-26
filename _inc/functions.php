@@ -303,7 +303,7 @@
 				$commented = $wpdb->get_results( 
 					"SELECT SQL_CALC_FOUND_ROWS p.*, p.comment_count views " . 
 					"FROM $wpdb->posts p $join WHERE post_date >= '{$this->time}' AND post_status = 'publish' AND comment_count != 0 " . 
-					"AND post_type IN ( " . $wpdb ->escape( $types ) . " ) $where GROUP BY ID ORDER BY comment_count DESC LIMIT $limit"
+					"AND post_type IN ( $types ) $where GROUP BY ID ORDER BY comment_count DESC LIMIT $limit"
 				);
 			}
 			return $this->display_post_tab_content( $commented );
@@ -337,7 +337,7 @@
 				
 				$viewed = $wpdb->get_results( "SELECT SQL_CALC_FOUND_ROWS p.*, meta_value as views FROM $wpdb->posts p " . 
 				"JOIN $wpdb->postmeta pm ON p.ID = pm.post_id AND meta_key = '_popular_views' AND meta_value != '' " .
-				"WHERE 1=1 AND p.post_status = 'publish' AND post_date >= '{$this->time}' AND p.post_type IN ( " . $wpdb ->escape( $types )  . ") $where " . 
+				"WHERE 1=1 AND p.post_status = 'publish' AND post_date >= '{$this->time}' AND p.post_type IN ( $types ) $where " . 
 				"GROUP BY p.ID ORDER BY ( meta_value+0 ) DESC LIMIT $limit");
 				
 				wp_cache_set( "pop_viewed_{$number}", $viewed, 'pop_cache' );
