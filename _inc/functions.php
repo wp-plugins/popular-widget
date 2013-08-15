@@ -20,9 +20,10 @@
 		 * @since 0.5.0
 		 */
 		function PopularWidgetFunctions( ){ 
-			add_action( 'template_redirect',array( &$this,'set_post_view') );
+			//add_action( 'template_redirect',array( &$this,'set_post_view') );
 			add_action( 'admin_print_styles',array( &$this,'load_admin_styles' ) );
 			add_action( 'wp_enqueue_scripts',array( &$this,'load_scripts_styles' ) );
+			add_action( 'wp_ajax_popwid_page_view_count', array( &$this,'set_post_view'));
 		 }
 		 
 		 /**
@@ -34,6 +35,7 @@
 		function load_admin_styles(){
 			global $pagenow;
 			if( $pagenow != 'widgets.php' ) return;
+			
 			wp_enqueue_style( 'popular-admin', POPWIDGET_URL . '_css/admin.css', NULL, $this->version );
 			wp_enqueue_script( 'popular-admin', POPWIDGET_URL . '_js/admin.js', array( 'jquery', 'jquery-ui-sortable' ), $this->version, true ); 
 		}
@@ -45,9 +47,19 @@
 		 * @since 0.5.0 
 		 */
 		function load_scripts_styles(){
-			if( is_admin() || !is_active_widget( false, false, $this->id_base, true ) ) return;
+			if( is_admin() || ! is_active_widget( false, false, $this->id_base, true ) ) return;
+			
 			wp_enqueue_style( 'popular-widget', POPWIDGET_URL.'_css/pop-widget.css', NULL, $this->version );
-			wp_enqueue_script( 'popular-widget', POPWIDGET_URL . '_js/pop-widget.js', array('jquery'), $this->version, true ); 	
+			wp_enqueue_script( 'popular-widget', POPWIDGET_URL . '_js/pop-widget.js', array('jquery'), $this->version, true ); 
+			
+			if( ! is_singular() )
+				return;
+			
+			global $post;
+			wp_localize_script ( 'popular-widget', 'popwid', apply_filters ( 'pop_localize_script_variables', array(
+				'postid' => $post->ID ,
+				'ajaxurl' => admin_url( 'admin-ajax.php' ), 
+			), $post ));			
 		}
 		
 		/**
@@ -161,50 +173,53 @@
 		 * @since 0.5.0
 		 */
 		function set_post_view( ) {
-			
-			if( !is_singular() && !is_page() ) 
+						
+			if( empty( $_POST['postid'] ) ||  empty( $_POST['instances'] ) ) 
 				return;
 			
 			//short circuit views count
-			if( !apply_filters( 'pop_set_post_view', true ) )
+			if( ! apply_filters( 'pop_set_post_view', true ) )
 				return;
 			
+			$postid 	= ( int ) $_POST['postid'];
 			$widgets = get_option( $this->option_name );
+			$instances = array_filter( explode( ',',  $_POST['instances'] ) );
 			
-			//if widget not active return;
-			if( empty( $widgets[$this->number]) ) 
-				return;	
-			
-			global $post;
-			$instance = $widgets[$this->number];
-					
-			do_action( 'pop_before_set_pos_view', $instance, $this->number );
-			
-			if( $instance['calculate'] == 'visits' ){
+			foreach( $instances  as $number ){
+				if( empty( $widgets[$number] ) ) 
+					continue;	
 				
-				if( !isset( $_COOKIE['popular_views_'.COOKIEHASH] ) ){
-					setcookie( 'popular_views_' . COOKIEHASH, "$post->ID|", 0, COOKIEPATH );
-					update_post_meta( $post->ID, '_popular_views', get_post_meta( $post->ID, '_popular_views', true ) +1 );
+				$instance 		= $widgets[$number];
+				$meta_key 	= $instance['meta_key'];
 				
-				}else{
+				do_action( 'pop_before_set_pos_view', $instance, $number );
+				
+				if( $instance['calculate'] == 'visits' ){
 					
-					$views = explode( "|", $_COOKIE['popular_views_' . COOKIEHASH] );
-					foreach( $views as $post_id ){ 
-						if( $post->ID == $post_id ) {
-							$exist = true; break;
+					if( ! isset( $_COOKIE['popular_views_'.COOKIEHASH] ) ){
+						setcookie( 'popular_views_' . COOKIEHASH, "$postid|", 0, COOKIEPATH );
+						update_post_meta( $postid, $meta_key, get_post_meta( $postid, $meta_key, true ) +1 );
+					
+					}else{
+						
+						$views = explode( "|", $_COOKIE['popular_views_' . COOKIEHASH] );
+						foreach( $views as $post_id ){ 
+							if( $postid == $post_id ) {
+								$exist = true;  break;
+							}
 						}
 					}
-				}
-				
-				if( empty( $exist ) ){
-					$views[] = $post->ID;
-					setcookie( 'popular_views_' . COOKIEHASH, implode( "|", $views ), 0 , COOKIEPATH );
-					update_post_meta( $post->ID, '_popular_views', get_post_meta( $post->ID, '_popular_views', true ) +1 );
-				}
-				
-			} else update_post_meta( $post->ID, '_popular_views', get_post_meta( $post->ID, '_popular_views', true ) +1 );
-			
-			do_action( 'pop_after_set_pos_view', $instance, $this->number );
+					
+					if( empty( $exist ) ){
+						$views[] = $postid;
+						setcookie( 'popular_views_' . COOKIEHASH, implode( "|", $views ), 0 , COOKIEPATH );
+						update_post_meta( $postid, $meta_key, get_post_meta( $postid, $meta_key, true ) +1 );
+					}
+					
+				}else update_post_meta( $postid, $meta_key, get_post_meta( $postid, $meta_key, true ) +1 );
+
+				do_action( 'pop_after_set_pos_view', $instance, $number );
+			}
 		}
 		
 		/**
@@ -233,7 +248,7 @@
 				$posts = get_posts( apply_filters( 'pop_get_recent_posts_args', $args) );
 				wp_cache_set( "pop_recent_{$number}", $posts, 'pop_cache' );
 			 }
-			 return $this->display_post_tab_content( $posts );
+			return apply_filters( 'pop_recent_posts_content', $this->display_post_tab_content( $posts ), $this->instance, $posts );
 		}
 		
 		/**
@@ -255,11 +270,11 @@
 				$where = " AND ( c.comment_post_ID " . ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . 
 				"( SELECT object_id FROM $wpdb->term_relationships tr " .
 				"JOIN $wpdb->comments c ON c.comment_post_ID = tr.object_id " .
-				"WHERE term_taxonomy_id IN ( " . $wpdb ->escape( trim( $cats, ',' ) ) . " ) ) ) ";
+				"WHERE term_taxonomy_id IN ( " . esc_sql( trim( $cats, ',' ) ) . " ) ) ) ";
 				
 				//user filter
 				if( !empty( $userids ) )
-				$where .=  " AND c.user_id ". ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . " ( ". $wpdb ->escape( trim( $userids, ',' ) ) ." )"; 
+				$where .=  " AND c.user_id ". ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . " ( ". esc_sql( trim( $userids, ',' ) ) ." )"; 
 				
 				$join = apply_filters( 'pop_comments_join', $join, $this->instance );
 				$where = apply_filters( 'pop_comments_where', $where, $this->instance );
@@ -271,7 +286,7 @@
 				 );
 				wp_cache_set( "pop_comments_{$number}", $comments, 'pop_cache' );
 			}
-			return $this->display_comment_tab_content( $comments );
+			return apply_filters( 'pop_most_comments_content', $this->display_comment_tab_content( $comments ), $this->instance, $comments );
 		}
 		
 		/**
@@ -291,11 +306,11 @@
 				//taxonomy filter
 				if( !empty( $cats ) )
 				$where = " AND ( p.ID " . ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . 
-				"( SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id IN ( " . $wpdb ->escape( trim( $cats, ',' ) ) . " ) ) ) ";
+				"( SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id IN ( " . esc_sql( trim( $cats, ',' ) ) . " ) ) ) ";
 				
 				//user filter
 				if( !empty( $userids ) )
-				$where .=  " AND c.user_id ". ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . " ( ". $wpdb ->escape( trim( $userids, ',' ) ) ." )"; 
+				$where .=  " AND c.user_id ". ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . " ( ". esc_sql( trim( $userids, ',' ) ) ." )"; 
 				
 				$join = apply_filters( 'pop_commented_join', $join, $this->instance );
 				$where = apply_filters( 'pop_commented_where', $where, $this->instance );
@@ -306,7 +321,7 @@
 					"AND post_type IN ( $types ) $where GROUP BY ID ORDER BY comment_count DESC LIMIT $limit"
 				);
 			}
-			return $this->display_post_tab_content( $commented );
+			return apply_filters( 'pop_most_commented_content', $this->display_post_tab_content( $commented ), $this->instance, $commented );
 		}
 		
 		/**
@@ -326,24 +341,25 @@
 				//taxonomy filter
 				if( !empty( $cats ) )
 				$where = " AND ( p.ID " . ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . 
-				"( SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id IN ( " . $wpdb ->escape( trim( $cats, ',' ) ) . " ) ) ) ";
+				"( SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id IN ( " . esc_sql( trim( $cats, ',' ) ) . " ) ) ) ";
 				
 				//user filter
 				if( !empty( $userids ) )
-				$where .=  " AND post_author ". ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . " ( ". $wpdb ->escape( trim( $userids, ',' ) ) ." )"; 
+				$where .=  " AND post_author ". ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . " ( ". esc_sql( trim( $userids, ',' ) ) ." )"; 
 				
 				$join = apply_filters( 'pop_viewed_join', $join, $this->instance );
 				$where = apply_filters( 'pop_viewed_where', $where, $this->instance );
 				
-				$viewed = $wpdb->get_results( "SELECT SQL_CALC_FOUND_ROWS p.*, meta_value as views FROM $wpdb->posts p " . 
-				"JOIN $wpdb->postmeta pm ON p.ID = pm.post_id AND meta_key = '_popular_views' AND meta_value != '' " .
+				$viewed = $wpdb->get_results( $wpdb->prepare( "SELECT SQL_CALC_FOUND_ROWS p.*, meta_value as views FROM $wpdb->posts p " . 
+				"JOIN $wpdb->postmeta pm ON p.ID = pm.post_id AND meta_key = %s AND meta_value != '' " .
 				"WHERE 1=1 AND p.post_status = 'publish' AND post_date >= '{$this->time}' AND p.post_type IN ( $types ) $where " . 
-				"GROUP BY p.ID ORDER BY ( meta_value+0 ) DESC LIMIT $limit");
+				"GROUP BY p.ID ORDER BY ( meta_value+0 ) DESC LIMIT $limit", $meta_key) );
 				
 				wp_cache_set( "pop_viewed_{$number}", $viewed, 'pop_cache' );
 			}
-			return $this->display_post_tab_content( $viewed );
+			return apply_filters( 'pop_most_viewed_content', $this->display_post_tab_content( $viewed ), $this->instance, $viewed );
 		}
+		
 		
 		/**
 		 *Display tags content
@@ -357,6 +373,7 @@
 				'smallest'=>'8', 'largest'=>'22', 'format'=>"list", 'echo'=>false, 'taxonomy' => $taxonomy 
 			), $this->instance ) );
 		}
+		
 		
 		/**
 		 *Display tab post content
@@ -382,7 +399,7 @@
 				);
 				
 				// counter
-				if( !empty( $counter ) && $post->views )
+				if( !empty( $counter ) && isset( $post->views ) )
 				$output .= '<span class="pop-count">( ' . preg_replace( "/(?<=\d)(?=(\d{3})+(?!\d))/", ",", $post->views ) . ' )</span>';
 				
 				// excerpt
