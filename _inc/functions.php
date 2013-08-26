@@ -248,6 +248,7 @@
 				$posts = get_posts( apply_filters( 'pop_get_recent_posts_args', $args) );
 				wp_cache_set( "pop_recent_{$number}", $posts, 'pop_cache' );
 			 }
+			 
 			return apply_filters( 'pop_recent_posts_content', $this->display_post_tab_content( $posts ), $this->instance, $posts );
 		}
 		
@@ -382,7 +383,9 @@
 		 *@since 1.6.0
 		*/
 		function display_post_tab_content( $posts ){
-			
+			if( empty ( $posts ) && !is_array( $posts ) )
+				return;
+				
 			$output = '';
 			extract( $this->instance );
 			
@@ -422,7 +425,9 @@
 		 *@since 1.6.0
 		*/
 		function display_comment_tab_content( $comments ){
-			
+			if( empty ( $comments ) && !is_array( $comments ) )
+				return;
+				
 			$output = '';
 			extract( $this->instance );
 			
