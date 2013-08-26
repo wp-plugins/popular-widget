@@ -52,6 +52,10 @@ This is a simple popular posts WordPress widget for your blog. Add and day inter
 
 == Changelog ==
 
+= 1.6.3 =
+* Fixed: Javascript error.
+* Fixed: Javascript empty value error.
+
 = 1.6.2 =
 * Added: Javascript pageview count.
 * Added: Custom pageview field option.
