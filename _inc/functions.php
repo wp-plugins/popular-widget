@@ -190,7 +190,7 @@
 					continue;	
 				
 				$instance 		= $widgets[$number];
-				$meta_key 	= $instance['meta_key'];
+				$meta_key	= isset( $instance['meta_key'] ) ? $instance['meta_key'] : '_popular_views';
 				
 				do_action( 'pop_before_set_pos_view', $instance, $number );
 				
@@ -249,7 +249,9 @@
 				wp_cache_set( "pop_recent_{$number}", $posts, 'pop_cache' );
 			 }
 			 
-			return apply_filters( 'pop_recent_posts_content', $this->display_post_tab_content( $posts ), $this->instance, $posts );
+			return apply_filters( 'pop_recent_posts_content', 
+				$this->display_post_tab_content( $posts ), $this->instance, $posts 
+			);
 		}
 		
 		/**
@@ -282,12 +284,15 @@
 		
 				$comments = $wpdb->get_results( 
 					"SELECT SQL_CALC_FOUND_ROWS c.* " .
-					"FROM $wpdb->comments c $join WHERE comment_date >= '{$this->time}' AND comment_approved = 1 AND comment_type = '' " . 
+					"FROM $wpdb->comments c $join 
+					WHERE comment_date >= '{$this->time}' AND comment_approved = 1 AND comment_type = '' " . 
 					"$where GROUP BY comment_ID ORDER BY comment_date DESC LIMIT $limit"
 				 );
 				wp_cache_set( "pop_comments_{$number}", $comments, 'pop_cache' );
 			}
-			return apply_filters( 'pop_most_comments_content', $this->display_comment_tab_content( $comments ), $this->instance, $comments );
+			return apply_filters( 'pop_most_comments_content', 
+				$this->display_comment_tab_content( $comments ), $this->instance, $comments 
+			);
 		}
 		
 		/**
@@ -306,12 +311,12 @@
 				
 				//taxonomy filter
 				if( !empty( $cats ) )
-				$where = " AND ( p.ID " . ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . 
-				"( SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id IN ( " . esc_sql( trim( $cats, ',' ) ) . " ) ) ) ";
+					$where = " AND ( p.ID " . ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . 
+					"( SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id IN ( " . esc_sql( trim( $cats, ',' ) ) . " ) ) ) ";
 				
 				//user filter
 				if( !empty( $userids ) )
-				$where .=  " AND c.user_id ". ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . " ( ". esc_sql( trim( $userids, ',' ) ) ." )"; 
+					$where .=  " AND c.user_id ". ( ( $exclude_cats == 'on' ) ? ' NOT IN ' : ' IN ' ) . " ( ". esc_sql( trim( $userids, ',' ) ) ." )"; 
 				
 				$join = apply_filters( 'pop_commented_join', $join, $this->instance );
 				$where = apply_filters( 'pop_commented_where', $where, $this->instance );
@@ -322,7 +327,9 @@
 					"AND post_type IN ( $types ) $where GROUP BY ID ORDER BY comment_count DESC LIMIT $limit"
 				);
 			}
-			return apply_filters( 'pop_most_commented_content', $this->display_post_tab_content( $commented ), $this->instance, $commented );
+			return apply_filters( 'pop_most_commented_content', 
+				$this->display_post_tab_content( $commented ), $this->instance, $commented 
+			);
 		}
 		
 		/**
@@ -435,7 +442,8 @@
 			
 				$comment_author = ( $comment->comment_author ) ? $comment->comment_author : "Anonymous";
 				
-				$output .= '<li><a href="'. esc_url( get_comment_link( $comment->comment_ID ) ) . '" title="' . esc_attr( $comment_author ) . '" rel="bookmark">';
+				$output .= '<li><a href="'. esc_url( get_comment_link( $comment->comment_ID ) ) . '" title="' . 
+				esc_attr( $comment_author ) . '" rel="bookmark">';
 				
 				//image
 				if( !empty( $thumb ) )  $image = get_avatar( $comment->comment_author_email, 100 ); 
