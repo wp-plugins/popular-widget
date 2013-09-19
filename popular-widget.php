@@ -4,10 +4,10 @@
 	Plugin URI: http://xparkmedia.com/plugins/popular-widget/
 	Description: Display most viewed, most commented and tags in one widget (with tabs)
 	Author: Hafid R. Trujillo Huizar
-	Version: 1.6.4
+	Version: 1.6.5
 	Author URI: http://www.xparkmedia.com
 	Requires at least: 3.0.0
-	Tested up to: 3.6.0
+	Tested up to: 3.6.1
 	
 	Copyright 2011-2013 by Hafid Trujillo http://www.xparkmedia.com
 	
@@ -40,7 +40,7 @@
 		
 		public $tabs = array();
 		public $defaults = array();
-		public $version = "1.6.4";
+		public $version = "1.6.5";
 		public $current_tab = false;
 		
 		/**

@@ -47,14 +47,15 @@
 		 * @since 0.5.0 
 		 */
 		function load_scripts_styles(){
-			if( is_admin() || ! is_active_widget( false, false, $this->id_base, true ) ) return;
 			
-			wp_enqueue_style( 'popular-widget', POPWIDGET_URL.'_css/pop-widget.css', NULL, $this->version );
-			wp_enqueue_script( 'popular-widget', POPWIDGET_URL . '_js/pop-widget.js', array('jquery'), $this->version, true ); 
+			if( ! is_admin() || is_active_widget( false, false, $this->id_base, true ) ) {
+				wp_enqueue_style( 'popular-widget', POPWIDGET_URL . '_css/pop-widget.css', NULL, $this->version );
+				wp_enqueue_script( 'popular-widget', POPWIDGET_URL . '_js/pop-widget.js', array('jquery'), $this->version, true ); 
+			}
 			
-			if( ! is_singular() )
+			if( ! is_singular() && ! apply_filters( 'pop_allow_page_view', false ) )
 				return;
-			
+				
 			global $post;
 			wp_localize_script ( 'popular-widget', 'popwid', apply_filters ( 'pop_localize_script_variables', array(
 				'postid' => $post->ID ,
@@ -173,28 +174,34 @@
 		 * @since 0.5.0
 		 */
 		function set_post_view( ) {
-						
-			if( empty( $_POST['postid'] ) ||  empty( $_POST['instances'] ) ) 
+
+			if( empty( $_POST['postid'] ) ) 
 				return;
 			
 			//short circuit views count
 			if( ! apply_filters( 'pop_set_post_view', true ) )
 				return;
 			
+			global $wp_registered_widgets;
+			
+			$meta_key_old = false;
 			$postid 	= ( int ) $_POST['postid'];
 			$widgets = get_option( $this->option_name );
-			$instances = array_filter( explode( ',',  $_POST['instances'] ) );
-			
-			foreach( $instances  as $number ){
-				if( empty( $widgets[$number] ) ) 
-					continue;	
-				
-				$instance 		= $widgets[$number];
+	
+			foreach( (array) $widgets as $number => $widget ){
+				if( ! isset( $wp_registered_widgets["popular-widget-{$number}"] ) )
+					continue;
+									
+				$instance 		= $wp_registered_widgets["popular-widget-{$number}"];
 				$meta_key	= isset( $instance['meta_key'] ) ? $instance['meta_key'] : '_popular_views';
+				
+				// avoid duplicate enties
+				if( $meta_key_old == $meta_key )
+					continue;
 				
 				do_action( 'pop_before_set_pos_view', $instance, $number );
 				
-				if( $instance['calculate'] == 'visits' ){
+				if( isset($instance['calculate'] ) && $instance['calculate']  == 'visits' ){
 					
 					if( ! isset( $_COOKIE['popular_views_'.COOKIEHASH] ) ){
 						setcookie( 'popular_views_' . COOKIEHASH, "$postid|", 0, COOKIEPATH );
@@ -217,9 +224,12 @@
 					}
 					
 				}else update_post_meta( $postid, $meta_key, get_post_meta( $postid, $meta_key, true ) +1 );
-
+				
+				$meta_key_old = $meta_key;
+				
 				do_action( 'pop_after_set_pos_view', $instance, $number );
 			}
+			die();
 		}
 		
 		/**
@@ -401,7 +411,7 @@
 				
 				//image
 				if( !empty( $thumb ) )  $image = $this->get_post_image( $post->ID, $imgsize );
-				$output .= isset( $image ) ? $image . '<div class="pop-overlay">' : '<div class="pop-text">';
+				$output .= isset( $image ) ? $image . '<span class="pop-overlay">' : '<span class="pop-text">';
 				
 				// title
 				$output .= apply_filters( "pop_{$this->current_tab}_title", 
@@ -410,7 +420,7 @@
 				
 				// counter
 				if( !empty( $counter ) && isset( $post->views ) )
-				$output .= '<span class="pop-count">( ' . preg_replace( "/(?<=\d)(?=(\d{3})+(?!\d))/", ",", $post->views ) . ' )</span>';
+					$output .= '<span class="pop-count">( ' . preg_replace( "/(?<=\d)(?=(\d{3})+(?!\d))/", ",", $post->views ) . ' )</span>';
 				
 				// excerpt
 				if( !empty( $excerpt ) ){ 
@@ -419,7 +429,7 @@
 					else $output .= '<span class="pop-summary">' . $this->limit_words( ( $post->post_content ), $excerptlength ) . '</span>';
 				 }
 			 
-				$output .= '</a><div class="pop-cl"></div></li>';
+				$output .= '</span></a><br class="pop-cl" /></li>';
 			}
 			return $output;
 		}
@@ -447,7 +457,7 @@
 				
 				//image
 				if( !empty( $thumb ) )  $image = get_avatar( $comment->comment_author_email, 100 ); 
-				$output .= isset( $image ) ? $image . '<div class="pop-overlay">' : '<div class="pop-text">';
+				$output .= isset( $image ) ? $image . '<span class="pop-overlay">' : '<span class="pop-text">';
 				
 				// title
 				$output .= apply_filters( "pop_{$this->current_tab}_title", 
@@ -458,7 +468,7 @@
 				if( !empty( $excerpt ) )
 				$output .= '<span class="pop-summary">' . $this->limit_words( ( $comment->comment_content ), $excerptlength ) . '</span>';
 			 
-				$output .= '</a><div class="pop-cl"></div></li>';
+				$output .= '</span></a><br class="pop-cl" /></li>';
 			}
 			return $output;
 		}
