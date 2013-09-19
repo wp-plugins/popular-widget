@@ -4,10 +4,10 @@
 	Plugin URI: http://xparkmedia.com/plugins/popular-widget/
 	Description: Display most viewed, most commented and tags in one widget (with tabs)
 	Author: Hafid R. Trujillo Huizar
-	Version: 1.6.3
+	Version: 1.6.5
 	Author URI: http://www.xparkmedia.com
 	Requires at least: 3.0.0
-	Tested up to: 3.6.0
+	Tested up to: 3.6.1
 	
 	Copyright 2011-2013 by Hafid Trujillo http://www.xparkmedia.com
 	
@@ -40,7 +40,7 @@
 		
 		public $tabs = array();
 		public $defaults = array();
-		public $version = "1.6.3";
+		public $version = "1.6.5";
 		public $current_tab = false;
 		
 		/**
@@ -63,10 +63,11 @@
 			define( 'POPWIDGET_URL', WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . "/" );
 			
 			$this->defaults = apply_filters( 'pop_defaults_settings', array(
-				'nocomments' => false, 'nocommented' => false, 'noviewed' => false, 'norecent' => false, 'userids' => false,
-				'imgsize' => 'thumbnail', 'counter' => false, 'excerptlength' => 15, 'tlength' => 20, 'meta_key' => '_popular_views',
-				'calculate' => 'visits', 'title' => '', 'limit'=> 5, 'cats'=>'', 'lastdays' => 90, 'taxonomy' => 'post_tag', 'exclude_users' => false,
-				'posttypes' => array( 'post' => 'on' ), 'thumb' => false, 'excerpt' => false, 'notags'=> false, 'exclude_cats' => false
+				'nocomments' => false, 'nocommented' => false, 'noviewed' => false, 'norecent' => false, 
+				'userids' => false, 'imgsize' => 'thumbnail', 'counter' => false, 'excerptlength' => 15, 'tlength' => 20,
+				'meta_key' => '_popular_views', 'calculate' => 'visits', 'title' => '', 'limit'=> 5, 'cats'=>'', 'lastdays' => 90,
+				'taxonomy' => 'post_tag', 'exclude_users' => false, 'posttypes' => array( 'post' => 'on' ), 'thumb' => false,
+				'excerpt' => false, 'notags'=> false, 'exclude_cats' => false
 			) );
 			
 			$this->tabs = apply_filters( 'pop_defaults_tabs', array(
@@ -124,7 +125,7 @@
 			}
 			
 			if( empty($new_instance['meta_key'] ) )
-			$new_instance['meta_key'] = $this->defaults['meta_key'];
+				$new_instance['meta_key'] = $this->defaults['meta_key'];
 				
 			return $new_instance;
 		}
