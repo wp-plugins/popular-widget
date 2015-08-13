@@ -412,6 +412,8 @@
 			foreach( $posts as $key => $post ){ 
 				$output .= '<li><a href="'. esc_url( get_permalink( $post->ID ) ) . '" title="' . esc_attr( $post->post_title ) . '" rel="' . esc_attr( $rel ) . '">';
 				
+				$output .= apply_filters( "pop_{$this->current_tab}_before_post",  '', $post );
+
 				//image
 				if( !empty( $thumb ) )  $image = $this->get_post_image( $post->ID, $imgsize );
 				$output .= isset( $image ) ? $image . '<span class="pop-overlay">' : '<span class="pop-text">';
@@ -432,7 +434,10 @@
 					else $output .= '<span class="pop-summary">' . $this->limit_words( ( $post->post_content ), $excerptlength ) . '</span>';
 				 }
 			 
-				$output .= '</span></a><br class="pop-cl" /></li>';
+				$output .= '</span>';
+				
+				$output .= apply_filters( "pop_{$this->current_tab}_after_post", '', $post );
+				$output .= '</a><br class="pop-cl" /></li>';
 			}
 			return $output;
 		}
