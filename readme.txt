@@ -3,7 +3,7 @@ Contributors: Hax
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YM9GXCFBND89E
 Tags: box,widget,popular,most commented,most viewed,tags,tabs,dynamic,cloud,post by category,by date,popular posts,range,comments,recent comments,avatar,images,current posts,recent
 Requires at least: 3.0.0
-Tested up to: 4.0
+Tested up to: 4.2.4
 Stable tag: 1.6.9
 
 Display the most commented or most viewed posts in a tabbed widget, filter the post by date range or by category. It also includes a tags tab. 
