@@ -39,7 +39,7 @@
 	class PopularWidget extends PopularWidgetFunctions {
 		
 		public $tabs = array();
-		public $version = '1.6.8';
+		public $version = '1.6.9';
 		public $defaults = array();
 		public $current_tab = false;
 		
