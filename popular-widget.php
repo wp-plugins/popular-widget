@@ -32,9 +32,9 @@
 	
 	if( ! class_exists( 'PopularWidget' )
 	&& ! class_exists( 'PopularWidgetFunctions' ) 
-	&& file_exists( get_template_directory() . "/_inc/functions.php" ) ){
+	&& file_exists( dirname( __FILE__ ) . "/_inc/functions.php" ) ){
 		
-	include_once( get_template_directory() . "/_inc/functions.php" );
+	include_once( dirname( __FILE__ )  . "/_inc/functions.php" );
 	
 	class PopularWidget extends PopularWidgetFunctions {
 		
